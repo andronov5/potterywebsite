@@ -1,0 +1,938 @@
+:root {
+  --ink: #263a32;
+  --paper: #f6f0e5;
+  --white: #fffdf7;
+  --peach: #efc5b5;
+  --mint: #bfd6c1;
+  --blue: #b9d9df;
+  --butter: #f2dda4;
+  --lilac: #dcc3df;
+  --line: 2px solid var(--ink);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Trebuchet MS", "Gill Sans", Arial, sans-serif;
+  font-size: 16px;
+}
+
+a { color: inherit; }
+
+button,
+input,
+textarea,
+select {
+  color: inherit;
+  font: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select { outline-offset: 4px; }
+
+:focus-visible { outline: 3px solid #b7473e; }
+
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 12px 16px;
+  border: var(--line);
+  background: var(--white);
+  transform: translateY(-180%);
+}
+
+.skip-link:focus { transform: translateY(0); }
+
+.site-header {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  min-height: 94px;
+  padding: 16px clamp(20px, 4vw, 64px);
+  border-bottom: var(--line);
+  background: var(--paper);
+}
+
+.wordmark {
+  display: inline-flex;
+  width: fit-content;
+  flex-direction: column;
+  text-decoration: none;
+}
+
+.wordmark span {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(1.25rem, 2.3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.wordmark small,
+.eyebrow,
+.photo-note,
+.product-number,
+.site-nav,
+.site-footer,
+.view-piece {
+  font-family: "Courier New", Courier, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.wordmark small {
+  margin-top: 2px;
+  font-size: 0.67rem;
+}
+
+.site-nav {
+  display: flex;
+  gap: clamp(18px, 4vw, 54px);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.site-nav a {
+  padding: 10px 2px 7px;
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+}
+
+.site-nav a:hover { border-bottom-color: var(--ink); }
+
+.site-nav sup {
+  margin-left: 3px;
+  color: #a43e38;
+}
+
+.catalog-page {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: clamp(34px, 6vw, 84px) clamp(18px, 4vw, 64px) 100px;
+}
+
+.catalog-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.55fr);
+  gap: 7vw;
+  align-items: end;
+  padding-bottom: clamp(38px, 6vw, 76px);
+}
+
+.eyebrow {
+  margin: 0 0 18px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.catalog-intro h1 {
+  max-width: 800px;
+  margin: 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: clamp(3.5rem, 8.4vw, 8rem);
+  font-weight: 500;
+  letter-spacing: -0.065em;
+  line-height: 0.82;
+}
+
+.intro-note {
+  max-width: 430px;
+  margin: 0;
+  padding: 19px 0 0 24px;
+  border-top: var(--line);
+  border-left: var(--line);
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(24px, 3vw, 48px);
+  align-items: start;
+}
+
+.product-card {
+  grid-column: span 4;
+  border: var(--line);
+  background: var(--card-tone);
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.product-card:nth-child(1),
+.product-card:nth-child(7) { grid-column: span 5; }
+
+.product-card:nth-child(2),
+.product-card:nth-child(6) { grid-column: span 7; }
+
+.tone-peach { --card-tone: var(--peach); }
+.tone-mint { --card-tone: var(--mint); }
+.tone-blue { --card-tone: var(--blue); }
+.tone-butter { --card-tone: var(--butter); }
+.tone-lilac { --card-tone: var(--lilac); }
+
+.product-link {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  text-decoration: none;
+}
+
+.product-number {
+  display: grid;
+  min-width: 52px;
+  place-items: start center;
+  padding-top: 20px;
+  border-right: var(--line);
+  font-size: 0.75rem;
+  font-weight: 700;
+  writing-mode: vertical-rl;
+}
+
+.product-photo-wrap {
+  position: relative;
+  display: block;
+  aspect-ratio: 5 / 4;
+  margin: 16px 16px 0;
+  overflow: hidden;
+  border: var(--line);
+  background: var(--white);
+}
+
+.product-card:nth-child(3n) .product-photo-wrap { aspect-ratio: 1 / 1.08; }
+
+.product-photo-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 220ms ease;
+}
+
+.product-link:hover .product-photo-wrap img { transform: scale(1.025) rotate(-0.6deg); }
+
+.photo-note {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 7px 9px;
+  border: 1px solid var(--ink);
+  background: var(--white);
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.product-copy {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: start;
+  padding: 22px 16px 18px;
+}
+
+.product-copy strong {
+  display: block;
+  font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: clamp(1.35rem, 2.4vw, 2.25rem);
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.product-copy small {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.product-copy b {
+  padding: 7px 9px;
+  border: 1px solid var(--ink);
+  background: var(--white);
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+}
+
+.view-piece {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: var(--line);
+  background: var(--white);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.product-link:hover .view-piece {
+  background: var(--ink);
+  color: var(--white);
+}
+
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px clamp(20px, 4vw, 64px);
+  border-top: var(--line);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 0.65rem;
+}
+
+.site-footer p { margin: 0; }
+
+@media (max-width: 900px) {
+  .catalog-intro {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
+  .intro-note { max-width: 550px; }
+
+  .product-card,
+  .product-card:nth-child(n) { grid-column: span 6; }
+}
+
+@media (max-width: 620px) {
+  .site-header {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .site-nav {
+    justify-content: space-between;
+    gap: 10px;
+    border-top: 1px solid var(--ink);
+  }
+
+  .catalog-page { padding-top: 42px; }
+
+  .catalog-intro h1 { font-size: clamp(3.45rem, 18vw, 5.5rem); }
+
+  .product-card,
+  .product-card:nth-child(n) { grid-column: 1 / -1; }
+
+  .product-photo-wrap { aspect-ratio: 1 / 1; }
+
+  .site-footer { flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.product-page,
+.about-page {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: 34px clamp(18px, 4vw, 64px) 100px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 32px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--ink);
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  gap: clamp(30px, 6vw, 92px);
+  align-items: start;
+}
+
+.detail-gallery {
+  padding: clamp(12px, 2vw, 22px);
+  border: var(--line);
+  background: var(--card-tone);
+  box-shadow: 9px 9px 0 var(--ink);
+}
+
+.detail-main-photo {
+  position: relative;
+  aspect-ratio: 1 / 1.02;
+  overflow: hidden;
+  border: var(--line);
+  background: var(--white);
+}
+
+.detail-main-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-counter {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 8px 11px;
+  border: var(--line);
+  background: var(--white);
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.gallery-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ink);
+}
+
+.gallery-controls button {
+  min-height: 44px;
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.gallery-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.gallery-thumbnails button {
+  position: relative;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  background: var(--white);
+  cursor: pointer;
+}
+
+.gallery-thumbnails button[aria-pressed="true"] {
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: translate(-2px, -2px);
+}
+
+.gallery-thumbnails img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.3 / 1;
+  object-fit: cover;
+}
+
+.gallery-thumbnails span {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  padding: 3px 4px;
+  background: var(--white);
+  font-family: "Courier New", monospace;
+  font-size: 0.6rem;
+}
+
+.product-info {
+  position: sticky;
+  top: 28px;
+  padding-top: 12px;
+}
+
+.piece-index {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 11px;
+  margin-bottom: 36px;
+  padding: 9px 12px;
+  border: var(--line);
+  background: var(--butter);
+  box-shadow: 4px 4px 0 var(--ink);
+  font-family: "Courier New", monospace;
+  text-transform: uppercase;
+}
+
+.piece-index span { font-size: 0.65rem; letter-spacing: 0.12em; }
+.piece-index strong { font-family: Georgia, serif; font-size: 1.7rem; }
+
+.product-info h1,
+.checkout-panel h2,
+.checkout-success h2,
+.reviews-section h2,
+.review-form h3,
+.about-copy h1,
+.about-notes h2 {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  letter-spacing: -0.045em;
+}
+
+.product-info h1 {
+  margin: 0;
+  font-size: clamp(3.6rem, 7vw, 7.5rem);
+  font-weight: 500;
+  line-height: 0.83;
+}
+
+.detail-price {
+  width: fit-content;
+  margin: 30px 0 24px;
+  padding: 7px 11px;
+  border: var(--line);
+  background: var(--white);
+  box-shadow: 4px 4px 0 var(--ink);
+  font-family: "Courier New", monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.detail-description {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.handmade-note {
+  max-width: 590px;
+  margin: 24px 0 32px;
+  padding: 18px 0 0 20px;
+  border-top: 1px solid var(--ink);
+  border-left: 1px solid var(--ink);
+  line-height: 1.65;
+}
+
+.piece-specs {
+  margin: 0;
+  border-top: var(--line);
+}
+
+.piece-specs div {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.35fr) 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ink);
+}
+
+.piece-specs dt {
+  font-family: "Courier New", monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.piece-specs dd { margin: 0; }
+
+.checkout-panel,
+.checkout-success {
+  max-width: 1180px;
+  margin: clamp(80px, 10vw, 150px) auto 0;
+  padding: clamp(24px, 5vw, 70px);
+  border: var(--line);
+  background: var(--blue);
+  box-shadow: 10px 10px 0 var(--ink);
+}
+
+.checkout-heading-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  align-items: start;
+}
+
+.checkout-panel h2,
+.checkout-success h2 {
+  margin: 0;
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 500;
+  line-height: 0.9;
+}
+
+.demo-stamp {
+  display: grid;
+  width: 86px;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 3px double var(--ink);
+  border-radius: 50%;
+  font-family: "Courier New", monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  transform: rotate(8deg);
+}
+
+.demo-warning {
+  max-width: 660px;
+  margin: 24px 0 34px;
+  padding: 13px 15px;
+  border: 1px solid var(--ink);
+  background: var(--butter);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.checkout-form {
+  padding: clamp(20px, 4vw, 44px);
+  border: var(--line);
+  background: var(--white);
+}
+
+.checkout-step {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 36px 0 20px;
+  padding-bottom: 10px;
+  border-bottom: var(--line);
+}
+
+.checkout-step:first-child { margin-top: 0; }
+
+.checkout-step span {
+  font-family: "Courier New", monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.checkout-step h3 {
+  margin: 0;
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: 1.65rem;
+  letter-spacing: -0.02em;
+}
+
+.quantity-row,
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+
+.quantity-control {
+  display: grid;
+  grid-template-columns: 44px 50px 44px;
+  border: 1px solid var(--ink);
+}
+
+.quantity-control button,
+.quantity-control output {
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+  border: 0;
+  background: var(--white);
+}
+
+.quantity-control button { cursor: pointer; font-size: 1.25rem; }
+.quantity-control output { border-right: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+
+.order-total {
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 16px;
+  background: var(--paper);
+}
+
+.order-total strong { font-family: "Courier New", monospace; font-size: 1.25rem; }
+.order-total small { flex-basis: 100%; line-height: 1.5; }
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.field-grid label,
+.review-form > label {
+  display: grid;
+  gap: 7px;
+  font-family: "Courier New", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.full-field { grid-column: 1 / -1; }
+
+.field-grid input,
+.review-form input,
+.review-form textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: #fff;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-size: 1rem;
+  text-transform: none;
+}
+
+.review-form textarea { resize: vertical; }
+
+.checkout-button,
+.ink-button,
+.paper-button {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 18px;
+  border: var(--line);
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--white);
+  font-family: "Courier New", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.checkout-button {
+  width: 100%;
+  margin-top: 32px;
+  font-size: 0.77rem;
+}
+
+.checkout-button:hover,
+.ink-button:hover { background: #a7473d; }
+.checkout-button:disabled { cursor: wait; opacity: 0.7; }
+.paper-button { background: var(--white); color: var(--ink); }
+
+.checkout-fine-print {
+  margin: 12px 0 0;
+  text-align: center;
+  font-family: "Courier New", monospace;
+  font-size: 0.59rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.checkout-success {
+  text-align: left;
+}
+
+.success-mark {
+  display: grid;
+  width: 66px;
+  aspect-ratio: 1;
+  margin-bottom: 26px;
+  place-items: center;
+  border: var(--line);
+  background: var(--white);
+  font-size: 2rem;
+}
+
+.checkout-success > p:not(.eyebrow) { max-width: 660px; line-height: 1.65; }
+.checkout-success dl { max-width: 660px; margin: 28px 0; border-top: var(--line); }
+.checkout-success dl div { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-bottom: 1px solid var(--ink); }
+.checkout-success dd { margin: 0; font-family: "Courier New", monospace; font-weight: 700; }
+
+.reviews-section {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.35fr) minmax(0, 0.65fr);
+  gap: clamp(30px, 6vw, 80px);
+  margin-top: clamp(80px, 10vw, 150px);
+  padding: clamp(28px, 5vw, 66px);
+  border: var(--line);
+  background: var(--lilac);
+  box-shadow: 10px 10px 0 var(--ink);
+}
+
+.reviews-summary { align-self: start; }
+.reviews-section h2 { margin: 0; font-size: clamp(3.5rem, 6vw, 6rem); font-weight: 500; }
+
+.rating-summary {
+  display: grid;
+  margin-top: 28px;
+  padding: 20px 0;
+  border-top: var(--line);
+  border-bottom: var(--line);
+}
+
+.rating-summary strong { font-family: Georgia, serif; font-size: 3rem; }
+.rating-summary span { font-size: 0.86rem; }
+.prototype-note { font-size: 0.78rem; line-height: 1.55; }
+
+.review-content { display: grid; gap: 28px; }
+
+.review-form {
+  padding: clamp(20px, 3vw, 36px);
+  border: var(--line);
+  background: var(--white);
+}
+
+.review-form h3 { margin: 0 0 22px; font-size: 2rem; }
+.review-form > label { margin-top: 18px; }
+.review-form fieldset { margin: 18px 0 0; padding: 0; border: 0; }
+.review-form legend { margin-bottom: 8px; font-family: "Courier New", monospace; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+
+.star-options { display: flex; flex-wrap: wrap; gap: 7px; }
+.star-options label { position: relative; cursor: pointer; }
+.star-options input { position: absolute; opacity: 0; pointer-events: none; }
+.star-options span[aria-hidden="true"] { display: grid; min-width: 48px; min-height: 44px; place-items: center; border: 1px solid var(--ink); background: var(--paper); font-family: Georgia, serif; }
+.star-options input:checked + span { background: var(--butter); box-shadow: 3px 3px 0 var(--ink); transform: translate(-1px, -1px); }
+.star-options input:focus-visible + span { outline: 3px solid #b7473e; outline-offset: 3px; }
+
+.review-form .ink-button { margin-top: 20px; }
+.form-status { min-height: 1.2em; margin: 10px 0 0; font-size: 0.8rem; }
+
+.review-list { display: grid; gap: 14px; }
+.review-list article,
+.empty-review { padding: 20px; border: 1px solid var(--ink); background: var(--paper); }
+.review-list article header { display: flex; justify-content: space-between; gap: 20px; }
+.review-list article header span { letter-spacing: 0.08em; }
+.review-list article p { line-height: 1.6; }
+.review-list article small { font-family: "Courier New", monospace; text-transform: uppercase; }
+.empty-review { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 18px; }
+.empty-review span { font-family: Georgia, serif; font-size: 2.6rem; }
+.empty-review p { margin: 0; line-height: 1.55; }
+
+.about-page { padding-top: clamp(42px, 7vw, 96px); }
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
+  gap: clamp(36px, 7vw, 110px);
+  align-items: start;
+}
+
+.potter-photo {
+  position: sticky;
+  top: 26px;
+  padding: 16px;
+  border: var(--line);
+  background: var(--lilac);
+  box-shadow: 9px 9px 0 var(--ink);
+  transform: rotate(-1.1deg);
+}
+
+.potter-photo img { display: block; width: 100%; height: auto; border: var(--line); }
+.potter-photo span { display: block; padding: 12px 2px 0; font-family: "Courier New", monospace; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+
+.about-copy h1 {
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(4rem, 8vw, 8.5rem);
+  font-weight: 500;
+  line-height: 0.82;
+}
+
+.about-lede {
+  max-width: 700px;
+  margin: 50px 0;
+  padding: 22px 0 0 24px;
+  border-top: var(--line);
+  border-left: var(--line);
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  line-height: 1.45;
+}
+
+.about-lede p { margin: 0; }
+
+.about-notes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.about-notes section { padding: 24px; border: var(--line); background: var(--card-tone, var(--butter)); }
+.about-notes section:nth-child(2) { background: var(--mint); }
+.about-notes span { font-family: "Courier New", monospace; font-weight: 700; }
+.about-notes h2 { margin: 28px 0 12px; font-size: 2rem; }
+.about-notes p { margin: 0; line-height: 1.6; }
+.about-shop-link { margin-top: 32px; }
+
+.about-quote {
+  max-width: 1150px;
+  margin: clamp(70px, 10vw, 140px) auto 0;
+  padding: 30px 0;
+  border-top: var(--line);
+  border-bottom: var(--line);
+  font-family: "Iowan Old Style", Georgia, serif;
+  font-size: clamp(2.1rem, 5vw, 5.2rem);
+  font-style: italic;
+  line-height: 1.05;
+  text-align: center;
+}
+
+@media (max-width: 940px) {
+  .product-detail-grid,
+  .reviews-section,
+  .about-grid { grid-template-columns: 1fr; }
+
+  .product-info,
+  .potter-photo { position: static; }
+
+  .potter-photo { width: min(620px, 100%); }
+}
+
+@media (max-width: 620px) {
+  .product-page,
+  .about-page { padding-bottom: 72px; }
+
+  .product-info h1 { font-size: clamp(3.4rem, 18vw, 5.6rem); }
+
+  .checkout-panel,
+  .checkout-success,
+  .reviews-section {
+    margin-top: 72px;
+    padding: 18px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .checkout-heading-row { align-items: end; }
+  .demo-stamp { width: 64px; }
+  .checkout-form { padding: 18px; }
+  .field-grid { grid-template-columns: 1fr; }
+  .full-field { grid-column: auto; }
+  .quantity-row { align-items: start; }
+  .review-list article header { flex-direction: column; gap: 7px; }
+  .about-copy h1 { font-size: clamp(3.7rem, 18vw, 6rem); }
+  .about-notes { grid-template-columns: 1fr; }
+}

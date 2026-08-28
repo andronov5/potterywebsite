@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1400" viewBox="0 0 1200 1400" role="img" aria-labelledby="title desc">
+  <title id="title">Temporary potter portrait</title>
+  <desc id="desc">A pastel placeholder ready to be replaced with a portrait of the potter.</desc>
+  <rect width="1200" height="1400" fill="#dcc3df"/>
+  <rect x="76" y="76" width="1048" height="1248" fill="#f6f0e5" stroke="#263a32" stroke-width="6"/>
+  <path d="M76 420H1124M760 76V1324" stroke="#263a32" stroke-width="3"/>
+  <rect x="120" y="120" width="264" height="52" fill="#bfd6c1" stroke="#263a32" stroke-width="3"/>
+  <text x="145" y="155" font-family="Arial, sans-serif" font-size="24" letter-spacing="3" fill="#263a32">TEMP PORTRAIT</text>
+  <text x="120" y="1080" font-family="Georgia, serif" font-size="84" fill="#263a32">The potter</text>
+  <text x="120" y="1150" font-family="Arial, sans-serif" font-size="25" letter-spacing="5" fill="#263a32">INSERT YOUR PHOTO HERE</text>
+  <text x="815" y="1260" font-family="Georgia, serif" font-size="50" fill="#263a32">MAKER</text>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1400" viewBox="0 0 1200 1400" role="img" aria-labelledby="title desc">
+  <title id="title">Temporary studio photograph</title>
+  <desc id="desc">A sage placeholder labeled studio view.</desc>
+  <rect width="1200" height="1400" fill="#bfd6c1"/>
+  <rect x="72" y="72" width="1056" height="1256" fill="#e2eddb" stroke="#283c34" stroke-width="6"/>
+  <path d="M72 1010H1128M720 72V1328" stroke="#283c34" stroke-width="3"/>
+  <rect x="118" y="118" width="230" height="52" fill="#efc5b5" stroke="#283c34" stroke-width="3"/>
+  <text x="142" y="153" font-family="Arial, sans-serif" font-size="24" letter-spacing="4" fill="#283c34">TEMP PHOTO</text>
+  <text x="118" y="1120" font-family="Georgia, serif" font-size="86" fill="#283c34">Studio view</text>
+  <text x="118" y="1192" font-family="Arial, sans-serif" font-size="25" letter-spacing="5" fill="#283c34">REPLACE WITH YOUR IMAGE</text>
+  <text x="770" y="1268" font-family="Georgia, serif" font-size="48" fill="#283c34">03</text>
+</svg>
