@@ -1,120 +1,24 @@
-"use client";
-
-import { FormEvent, useState } from "react";
-import { formatPrice } from "../products";
-
-type CheckoutStatus = "idle" | "processing" | "success";
-
-export function CheckoutPanel({
-  price,
-  productNumber,
-}: {
-  price: number;
-  productNumber: string;
-}) {
-  const [quantity, setQuantity] = useState(1);
-  const [status, setStatus] = useState<CheckoutStatus>("idle");
-  const total = price * quantity;
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setStatus("processing");
-    window.setTimeout(() => setStatus("success"), 650);
+'use client';
+import Link from 'next/link';
+import { useRef, useState } from 'react';
+import { formatPrice, type Product } from '../products';
+export function CheckoutPanel({ product, enabled }: { product: Product; enabled: boolean }) {
+  const [quantity, setQuantity] = useState(1); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const requestId = useRef('');
+  const available = enabled && product.price_cents !== null && product.stock > 0;
+  async function checkout() {
+    setBusy(true); setError(''); if (!requestId.current) requestId.current = crypto.randomUUID();
+    try {
+      const response = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: product.slug, quantity, request_id: requestId.current }) });
+      const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Could not open checkout. Please try again.');
+      const url = new URL(data.url); if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com') throw new Error('Checkout could not be verified.');
+      window.location.assign(url.toString());
+    } catch (e) { setError(e instanceof Error ? e.message : 'Please try again.'); setBusy(false); }
   }
-
-  if (status === "success") {
-    return (
-      <section className="checkout-success" aria-live="polite">
-        <span className="success-mark" aria-hidden="true">✓</span>
-        <p className="eyebrow">Demo confirmation</p>
-        <h2>Your pretend order is in.</h2>
-        <p>
-          No order was created and no payment was processed. Once a real
-          payment provider is connected, this screen can show live order details.
-        </p>
-        <dl>
-          <div><dt>Demo order</dt><dd>DEMO-{productNumber}070</dd></div>
-          <div><dt>Sample total</dt><dd>{formatPrice(total)}</dd></div>
-        </dl>
-        <button className="paper-button" type="button" onClick={() => setStatus("idle")}>
-          Start another demo order
-        </button>
-      </section>
-    );
-  }
-
-  return (
-    <section className="checkout-panel" aria-labelledby="checkout-heading">
-      <div className="checkout-heading-row">
-        <div>
-          <p className="eyebrow">Secure checkout preview</p>
-          <h2 id="checkout-heading">Make it yours</h2>
-        </div>
-        <span className="demo-stamp">DEMO</span>
-      </div>
-      <p className="demo-warning">
-        This checkout is a realistic preview. Nothing is submitted, charged,
-        or saved.
-      </p>
-
-      <form className="checkout-form" onSubmit={submit}>
-        <div className="checkout-step">
-          <span>01</span>
-          <h3>Order</h3>
-        </div>
-        <div className="quantity-row">
-          <span>Quantity</span>
-          <div className="quantity-control">
-            <button
-              type="button"
-              onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-              aria-label="Decrease quantity"
-            >−</button>
-            <output aria-live="polite">{quantity}</output>
-            <button
-              type="button"
-              onClick={() => setQuantity((value) => Math.min(10, value + 1))}
-              aria-label="Increase quantity"
-            >+</button>
-          </div>
-        </div>
-        <div className="order-total">
-          <span>Estimated total</span>
-          <strong>{formatPrice(total)}</strong>
-          <small>Shipping would be calculated when the live checkout is connected.</small>
-        </div>
-
-        <div className="checkout-step">
-          <span>02</span>
-          <h3>Contact + delivery</h3>
-        </div>
-        <div className="field-grid">
-          <label className="full-field">Email<input type="email" name="email" autoComplete="email" required /></label>
-          <label className="full-field">Full name<input name="name" autoComplete="name" required /></label>
-          <label className="full-field">Street address<input name="address" autoComplete="street-address" required /></label>
-          <label>City<input name="city" autoComplete="address-level2" required /></label>
-          <label>State<input name="state" autoComplete="address-level1" required /></label>
-          <label>ZIP code<input name="zip" autoComplete="postal-code" inputMode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" required /></label>
-        </div>
-
-        <div className="checkout-step">
-          <span>03</span>
-          <h3>Payment preview</h3>
-        </div>
-        <div className="field-grid payment-fields">
-          <label className="full-field">Name on card<input name="cardName" autoComplete="cc-name" required /></label>
-          <label className="full-field">Card number<input name="card" autoComplete="cc-number" inputMode="numeric" placeholder="4242 4242 4242 4242" pattern="[0-9 ]{15,19}" required /></label>
-          <label>Expiration<input name="expiry" autoComplete="cc-exp" inputMode="numeric" placeholder="MM/YY" pattern="(0[1-9]|1[0-2])/[0-9]{2}" required /></label>
-          <label>Security code<input name="cvc" autoComplete="cc-csc" inputMode="numeric" placeholder="CVC" pattern="[0-9]{3,4}" required /></label>
-        </div>
-        <button className="checkout-button" type="submit" disabled={status === "processing"}>
-          <span>{status === "processing" ? "Preparing demo order…" : "Place demo order"}</span>
-          <strong>{formatPrice(total)}</strong>
-        </button>
-        <p className="checkout-fine-print">
-          Demo only · Do not enter real payment information · No charge will occur
-        </p>
-      </form>
-    </section>
-  );
+  return <section className="purchase-box" aria-labelledby="purchase-heading"><h2 id="purchase-heading">Make it yours</h2>
+    {available ? <><p>{product.stock} available. Shipping and applicable tax are shown before you pay.</p>
+      {product.stock > 1 && <label className="quantity-label">Quantity<select value={quantity} disabled={busy} onChange={e => { setQuantity(Number(e.target.value)); requestId.current = ''; }}>{Array.from({ length: Math.min(product.stock, 10) }, (_, i) => <option key={i} value={i + 1}>{i + 1}</option>)}</select></label>}
+      <button className="checkout-button" disabled={busy} onClick={checkout}>{busy ? 'Opening checkout…' : 'Continue to secure checkout'}<strong>{formatPrice(product.price_cents! * quantity)}</strong></button><p className="payment-note">Payment details are entered directly on Stripe’s secure checkout.</p>
+    </> : <><p>{product.price_cents !== null && product.stock === 0 ? 'This piece is currently sold out.' : 'Online ordering is not open for this piece yet.'}</p><Link className="paper-button" href={`/about?piece=${encodeURIComponent(product.name)}#contact`}>Ask Natalie about this piece</Link></>}
+    {error && <p className="error-message" role="alert">{error}</p>}
+  </section>;
 }

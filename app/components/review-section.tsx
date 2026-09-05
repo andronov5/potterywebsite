@@ -1,136 +1,24 @@
-"use client";
-
-import { FormEvent, useEffect, useMemo, useState } from "react";
-
-type Review = {
-  id: string;
-  name: string;
-  rating: number;
-  body: string;
-  date: string;
-};
-
-export function ReviewSection({ productSlug }: { productSlug: string }) {
-  const storageKey = `pottery-reviews-${productSlug}`;
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [rating, setRating] = useState(5);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(storageKey);
-      if (stored) setReviews(JSON.parse(stored));
-    } catch {
-      // The review form still works for the current visit if storage is blocked.
-    }
-  }, [storageKey]);
-
-  const average = useMemo(
-    () =>
-      reviews.length
-        ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-        : 0,
-    [reviews],
-  );
-
-  function submitReview(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const data = new FormData(form);
-    const review: Review = {
-      id: `${Date.now()}`,
-      name: String(data.get("reviewer")),
-      rating,
-      body: String(data.get("review")),
-      date: "Just now",
-    };
-    const next = [review, ...reviews];
-    setReviews(next);
-    setSaved(true);
-    form.reset();
-    setRating(5);
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(next));
-    } catch {
-      // Keep the review visible for this visit if storage is blocked.
-    }
-  }
-
-  return (
-    <section className="reviews-section" aria-labelledby="reviews-heading">
-      <div className="reviews-summary">
-        <p className="eyebrow">Community notes</p>
-        <h2 id="reviews-heading">Reviews</h2>
-        <div className="rating-summary">
-          <strong>{reviews.length ? average.toFixed(1) : "New"}</strong>
-          <span>
-            {reviews.length
-              ? `${reviews.length} ${reviews.length === 1 ? "review" : "reviews"}`
-              : "Be the first to leave a review"}
-          </span>
-        </div>
-        <p className="prototype-note">
-          For now, submitted reviews are saved only in this browser.
-        </p>
-      </div>
-
-      <div className="review-content">
-        <form className="review-form" onSubmit={submitReview}>
-          <h3>Leave a review</h3>
-          <label>
-            Your name
-            <input name="reviewer" autoComplete="name" required />
-          </label>
-          <fieldset>
-            <legend>Rating</legend>
-            <div className="star-options">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <label key={star}>
-                  <input
-                    type="radio"
-                    name="rating"
-                    value={star}
-                    checked={rating === star}
-                    onChange={() => setRating(star)}
-                  />
-                  <span aria-hidden="true">{star}★</span>
-                  <span className="sr-only">{star} out of 5 stars</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <label>
-            Your review
-            <textarea name="review" rows={5} required />
-          </label>
-          <button className="ink-button" type="submit">Post review</button>
-          <p className="form-status" aria-live="polite">
-            {saved ? "Your review has been added." : ""}
-          </p>
-        </form>
-
-        <div className="review-list" aria-live="polite">
-          {reviews.length === 0 ? (
-            <div className="empty-review">
-              <span aria-hidden="true">☆</span>
-              <p>No reviews yet. Your note can be the first one here.</p>
-            </div>
-          ) : (
-            reviews.map((review) => (
-              <article key={review.id}>
-                <header>
-                  <strong>{review.name}</strong>
-                  <span aria-label={`${review.rating} out of 5 stars`}>
-                    {"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}
-                  </span>
-                </header>
-                <p>{review.body}</p>
-                <small>{review.date}</small>
-              </article>
-            ))
-          )}
-        </div>
-      </div>
-    </section>
-  );
+'use client';
+import { useEffect, useState, type FormEvent } from 'react';
+type Review = { id: string; name: string; rating: number; body: string; created_at: string };
+export function ReviewSection({ productSlug, enabled }: { productSlug: string; enabled: boolean }) {
+ const [reviews, setReviews] = useState<Review[]>([]); const [status, setStatus] = useState(''); const [busy, setBusy] = useState(false); const [loadError, setLoadError] = useState(false);
+ useEffect(() => {
+  if (!enabled) return;
+  let active = true;
+  fetch(`/api/reviews?product=${encodeURIComponent(productSlug)}`).then(async r => { if (!r.ok) throw Error(); const d = await r.json(); if (active) setReviews(d.reviews); }).catch(() => { if (active) setLoadError(true); });
+  return () => { active = false; };
+ }, [productSlug, enabled]);
+ async function submit(e: FormEvent<HTMLFormElement>) {
+  e.preventDefault(); const form = e.currentTarget; const d = new FormData(form); setBusy(true); setStatus('');
+  try {
+   const r = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product_slug: productSlug, name: d.get('name'), rating: Number(d.get('rating')), body: d.get('body') }) });
+   const data = await r.json(); if (!r.ok) throw Error(data.error || 'Please try again.');
+   setStatus('Thank you! Your review was sent to Natalie and will appear after review.'); form.reset();
+  } catch (e) { setStatus(e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); }
+ }
+ if (!enabled) return null;
+ return <section className="reviews-section"><div className="reviews-summary"><p className="eyebrow">From the community</p><h2>Reviews</h2><p>{loadError ? 'Reviews are temporarily unavailable.' : reviews.length ? `${reviews.length} published reviews` : 'No reviews yet.'}</p></div>
+ <div className="review-content"><div className="review-list">{reviews.map(r => <article key={r.id}><header><strong>{r.name}</strong><span aria-label={`${r.rating} out of 5 stars`}>{'★'.repeat(r.rating)}</span></header><p>{r.body}</p><small>{new Date(r.created_at).toLocaleDateString()}</small></article>)}</div>
+ <form className="studio-form" onSubmit={submit}><h3>Leave a review</h3><label>Your name<input name="name" required maxLength={100} /></label><label>Rating<select name="rating" defaultValue="5">{[5,4,3,2,1].map(n => <option key={n} value={n}>{n} out of 5</option>)}</select></label><label>Your review<textarea name="body" rows={4} required minLength={10} maxLength={2000} /></label><button className="ink-button" disabled={busy}>{busy ? 'Sending…' : 'Submit review'}</button><p role="status">{status}</p></form></div></section>;
 }
