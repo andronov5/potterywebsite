@@ -21,7 +21,7 @@ Natalie did not supply prices. Every price is deliberately unset, and unconfirme
 
 ## One-time setup
 
-Use a normal Next.js server host (such as the host already connected to this GitHub repository). This app is not a static GitHub Pages export. No hosting account or domain was created or moved by these changes.
+The full shop needs a normal Next.js server host. The GitHub Pages collection preview described below has no server, payments, login, or form submissions.
 
 1. Create or select a Supabase project for this shop.
 2. Run `supabase/schema.sql` once in its SQL editor, then `supabase/seed.sql`. The seed is safe to repeat and does not overwrite Natalie’s edits. Do not rerun the schema file over existing tables; use reviewed migrations for future schema changes.
@@ -69,6 +69,16 @@ npm run dev
 ```
 
 For the unconfigured catalog only, environment values may stay empty. For server features, use the configured Supabase project and test Stripe keys. The production build is `npm run build`. Keep existing production hosting configured as a Node/Next.js application.
+
+## GitHub Pages collection preview
+
+The website preview is at **https://andronov5.github.io/potterywebsite/**. In repository **Settings → Pages → Build and deployment**, choose **GitHub Actions** as the source. The `Publish pottery website` workflow builds and publishes the collection whenever `main` changes; it can also be run manually from Actions.
+
+`npm run build:pages` exports the homepage, all published seed product pages, About page, and a studio notice into `pages-dist/`. Photos, galleries, styles, and links use the `/potterywebsite` base path. This output is ignored by git and uploaded as a Pages artifact; GitHub serves the built website instead of the README.
+
+The script stages an isolated copy outside the repository and never changes the full application. It excludes API and payment-return routes, reads only the supplied product catalog, and keeps checkout and contact submissions disabled. It never copies environment files and removes commerce/database configuration from the build environment. If a transformed route changes shape, the script fails with a named file rather than silently publishing an incomplete build.
+
+GitHub Pages is for this browsing preview. Launch the full shop on the server host from the setup section; do not collect login or payment details through Pages. [GitHub Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits) and [Next.js static exports](https://nextjs.org/docs/app/guides/static-exports) explain the hosting constraints.
 
 ## Verification performed
 

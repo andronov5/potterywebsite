@@ -16,6 +16,7 @@
 # next.js
 /.next/
 /out/
+/pages-dist/
 
 # misc
 .DS_Store
