@@ -18,16 +18,17 @@ create table private.studio_admin_emails (
  email text primary key check (email = lower(email) and email ~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$')
 );
 revoke all on private.studio_admin_emails from public, anon, authenticated;
+alter table private.studio_admin_emails enable row level security;
 
 create function private.grant_studio_admin() returns trigger language plpgsql security definer set search_path = '' as $$
 begin
- if exists(select 1 from private.studio_admin_emails where email = lower(new.email)) then
+ if new.email_confirmed_at is not null and exists(select 1 from private.studio_admin_emails where email = lower(new.email)) then
   insert into public.admin_users(user_id) values (new.id) on conflict do nothing;
  end if;
  return new;
 end; $$;
 revoke all on function private.grant_studio_admin() from public, anon, authenticated;
-create trigger grant_studio_admin_after_signup after insert on auth.users for each row execute function private.grant_studio_admin();
+create trigger grant_studio_admin_after_verification after insert or update of email, email_confirmed_at on auth.users for each row execute function private.grant_studio_admin();
 
 create function public.is_studio_admin() returns boolean language sql stable security invoker set search_path = '' as $$
  select exists(select 1 from public.admin_users where user_id = auth.uid());

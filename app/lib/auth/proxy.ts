@@ -23,12 +23,18 @@ export async function updateAuthSession(request: NextRequest) {
 
   // getClaims validates the signed token; never trust an unverified cookie session here.
   const { data } = await supabase.auth.getClaims();
-  if (!data?.claims && !request.nextUrl.pathname.startsWith('/admin/login')) {
+  const path = request.nextUrl.pathname.replace(/\/$/, '');
+  const publicRoute = path === '/admin/login' || path === '/admin/reset-password';
+  if (!data?.claims && !publicRoute) {
     const login = request.nextUrl.clone();
     login.pathname = '/admin/login';
     login.search = '';
-    return NextResponse.redirect(login);
+    const redirect = NextResponse.redirect(login);
+    response.cookies.getAll().forEach(cookie => redirect.cookies.set(cookie));
+    redirect.headers.set('Cache-Control', 'private, no-store');
+    return redirect;
   }
 
+  response.headers.set('Cache-Control', 'private, no-store');
   return response;
 }
