@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -65,7 +65,8 @@ export async function generateStaticParams() {
   await replace('app/lib/brand.ts', "'/brand/pottery-by-natalie-logo.jpg'", `'${basePath}/brand/pottery-by-natalie-logo.jpg'`);
 
   // Pages has no server. Do not include a login form or imply that credentials work here.
-  await rm(join(stage, 'app/admin/studio.tsx'));
+  await rm(join(stage, 'app/admin'), { recursive: true });
+  await mkdir(join(stage, 'app/admin'));
   await writeFile(join(stage, 'app/admin/page.tsx'), `
 import Link from 'next/link';
 export const metadata = { title: 'Studio', robots: { index: false, follow: false } };

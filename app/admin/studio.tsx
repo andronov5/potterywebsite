@@ -1,17 +1,19 @@
 'use client';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createAuthClient } from '../lib/auth/client';
 import { formatPrice, type Product } from '../products';
 const categories = ['Tea rituals','Kitchen','For pets','Around the home'];
 type Message = { id: string; name: string; email: string; topic: string; message: string; is_read: boolean; created_at: string };
 type Order = { id: string; product_name: string; quantity: number; status: string; customer_email: string | null; total_cents: number | null; stripe_session_id: string | null; created_at: string };
 type Review = { id: string; product_slug: string; name: string; rating: number; body: string; approved: boolean };
 const emptyProduct = (): Product => ({ slug: '', name: '', category: 'Kitchen', description: '', price_cents: null, stock: 0, weight_lbs: null, dimensions: null, material: 'BMX clay', care: null, condition_note: '', images: [], tone: 'mint', published: false, sort_order: 0 });
-export function AdminStudio({ configured, paymentsReady }: { configured: boolean; paymentsReady: boolean }) {
+export function AdminStudio({ paymentsReady }: { paymentsReady: boolean }) {
+ const router = useRouter();
  const dbRef = useRef<SupabaseClient | null>(null);
- const [checking, setChecking] = useState(configured); const [authorized, setAuthorized] = useState(false); const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
- const [recovery, setRecovery] = useState(false); const [busy, setBusy] = useState(false); const [uploading, setUploading] = useState(false); const [status, setStatus] = useState('');
+ const [checking, setChecking] = useState(true); const [busy, setBusy] = useState(false); const [uploading, setUploading] = useState(false); const [status, setStatus] = useState('');
  const [tab, setTab] = useState('Products'); const [products, setProducts] = useState<Product[]>([]); const [messages, setMessages] = useState<Message[]>([]); const [orders, setOrders] = useState<Order[]>([]); const [reviews, setReviews] = useState<Review[]>([]);
  const [draft, setDraft] = useState<Product | null>(null); const [editing, setEditing] = useState(false); const [dirty, setDirty] = useState(false); const [confirmDiscard, setConfirmDiscard] = useState(false);
  const [contactEmail, setContactEmail] = useState(''); const [portraitUrl, setPortraitUrl] = useState('/studio/natalie-portrait.jpg');
@@ -28,48 +30,21 @@ export function AdminStudio({ configured, paymentsReady }: { configured: boolean
   setProducts(result[0].data as Product[]); setMessages(result[1].data as Message[]); setOrders(result[2].data as Order[]); setReviews(result[3].data as Review[]);
   setContactEmail(result[4].data.contact_email); setPortraitUrl(result[4].data.portrait_url || '/studio/natalie-portrait.jpg');
  }
- async function verify() {
-  const { data: { user }, error } = await db().auth.getUser();
-  if (error || !user) { setAuthorized(false); setChecking(false); return; }
-  const membership = await db().from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();
-  if (membership.error || !membership.data) { setAuthorized(false); setChecking(false); setStatus('This account does not have studio access.'); return; }
-  setAuthorized(true); setChecking(false); await loadDashboard();
- }
  useEffect(() => {
-  if (!configured) return;
-  const client = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+  const client = createAuthClient();
   dbRef.current = client;
-  // Recovery links identify this state in their URL; the provider validates the token.
-  if (new URLSearchParams(window.location.hash.slice(1)).get('type') === 'recovery') setRecovery(true);
   const { data: { subscription } } = client.auth.onAuthStateChange((event) => {
-   if (event === 'PASSWORD_RECOVERY') setRecovery(true);
-   if (event === 'SIGNED_OUT') { setAuthorized(false); setProducts([]); setOrders([]); setMessages([]); setReviews([]); setDraft(null); setDirty(false); }
+   if (event === 'SIGNED_OUT') { setProducts([]); setOrders([]); setMessages([]); setReviews([]); setDraft(null); setDirty(false); router.replace('/admin/login'); router.refresh(); }
   });
-  verify().catch(e => { setStatus(e.message); setChecking(false); });
+  loadDashboard().catch(e => setStatus(e.message)).finally(() => setChecking(false));
   return () => { subscription.unsubscribe(); };
   // Client identity remains stable for this page mount.
   // eslint-disable-next-line react-hooks/exhaustive-deps
- }, [configured]);
+ }, []);
  useEffect(() => {
   function warn(e: BeforeUnloadEvent) { if (dirty) { e.preventDefault(); e.returnValue = ''; } }
   window.addEventListener('beforeunload', warn); return () => window.removeEventListener('beforeunload', warn);
  }, [dirty]);
- async function signIn(e: FormEvent) {
-  e.preventDefault(); setBusy(true); setStatus('');
-  try { const { error } = await db().auth.signInWithPassword({ email, password }); if (error) throw new Error('Could not sign in. Check your email and password.'); setPassword(''); await verify(); }
-  catch (e) { setStatus(e instanceof Error ? e.message : 'Please try again.'); } finally { setBusy(false); }
- }
- async function resetPassword() {
-  if (!email) { setStatus('Enter your email first, then choose Reset password.'); return; }
-  setBusy(true);
-  try { const { error } = await db().auth.resetPasswordForEmail(email,{ redirectTo: `${window.location.origin}/admin` }); if (error) throw error; setStatus('If an account exists for that email, a password reset link will arrive shortly.'); }
-  catch { setStatus('A reset email could not be requested. Please try again later.'); } finally { setBusy(false); }
- }
- async function changePassword(e: FormEvent) {
-  e.preventDefault(); setBusy(true); setStatus('');
-  try { const { error } = await db().auth.updateUser({ password }); if (error) throw error; setPassword(''); setRecovery(false); setStatus('Password updated.'); await verify(); }
-  catch { setStatus('The password could not be updated. Request a new reset link and try again.'); } finally { setBusy(false); }
- }
  async function signOut() {
   const { error } = await db().auth.signOut(); if (error) setStatus('Could not sign out. Please try again.'); else setStatus('Signed out.');
  }
@@ -122,10 +97,7 @@ export function AdminStudio({ configured, paymentsReady }: { configured: boolean
   const result = action === 'approve' ? await db().from('reviews').update({ approved:true }).eq('id',id) : await db().from('reviews').delete().eq('id',id);
   if (result.error) setStatus('The review could not be updated.'); else { setReviews(r => action === 'delete' ? r.filter(x => x.id !== id) : r.map(x => x.id === id ? { ...x, approved: true } : x)); setStatus('Review updated.'); }
  }
- if (!configured) return <section className="login-card"><p className="eyebrow">Natalie’s studio</p><h1>Studio login</h1><p>The studio login is ready to connect. The site owner needs to complete the one-time account setup before you can sign in.</p><p>Your products and photos are already in the shop.</p><Link href="/" className="paper-button">View the collection</Link></section>;
  if (checking) return <p role="status">Opening the studio…</p>;
- if (recovery) return <form className="studio-form login-card" onSubmit={changePassword}><h1>Choose a new password</h1><label>New password<input type="password" value={password} onChange={e => setPassword(e.target.value)} minLength={12} autoComplete="new-password" required /></label><button className="ink-button" disabled={busy}>Save new password</button><p role="status">{status}</p></form>;
- if (!authorized) return <form className="studio-form login-card" onSubmit={signIn}><p className="eyebrow">A space for the maker</p><h1>Studio login</h1><p>Sign in to add pieces, update the shop, and read your messages.</p><label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="username" required /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required /></label><button className="ink-button" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button><button type="button" className="text-button" onClick={resetPassword} disabled={busy}>Reset password</button><p role="status">{status}</p></form>;
  return <>
  <div className="admin-heading"><div><p className="eyebrow">Natalie’s studio</p><h1>Your shop, your way.</h1></div><div className="button-row"><Link className="paper-button" href="/" target="_blank">View shop ↗</Link><button className="paper-button" onClick={signOut} disabled={dirty}>Sign out</button></div></div>
  {!paymentsReady && <p className="notice">Payments are not active yet. You can prepare products now; customers will see that online ordering is not open.</p>}

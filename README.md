@@ -33,7 +33,7 @@ The full shop needs a normal Next.js server host. The GitHub Pages collection pr
 
    Knowing an email or signing into another account never grants studio access. To revoke access, remove the corresponding `admin_users` row. Do not put a password or service key in a product, GitHub file, or browser code.
 4. Set the Supabase Site URL to the live site origin and allow the exact `https://YOUR-DOMAIN/admin` recovery redirect. Configure an email sender in Supabase for production password-reset delivery. The client uses Supabase’s standard browser recovery session; there is no public signup UI.
-5. Copy `.env.example` to `.env.local` for local development. In the production host’s environment settings set the same keys. Use the Supabase project URL, public anon key, and private service-role key. Rebuild/redeploy after changing the `NEXT_PUBLIC_` keys, which are embedded at build time. Keep secrets out of GitHub.
+5. Copy `.env.example` to `.env.local` for local development. In the production host’s environment settings set the same keys. Use the Supabase project URL, modern publishable key, and private service-role key. Rebuild/redeploy after changing the `NEXT_PUBLIC_` keys, which are embedded at build time. Keep secrets out of GitHub. The server validates Auth cookies and the database admin allowlist before rendering any `/admin` page; `/admin/login` is the only public studio route.
 6. Open `/admin`, sign in, confirm all prices and stock counts, and add Natalie’s public contact email if desired. The contact form saves to the Messages tab even if the public email is blank; it does not send notification emails. Natalie replies using the email link in each message.
 7. Complete the Stripe setup below before enabling checkout.
 
