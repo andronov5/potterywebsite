@@ -1,28 +1,86 @@
-# Pottery Shop
+# Natalie’s Pottery
 
-A distinctive pastel pottery storefront built around a glaze-test notebook visual style. The shop avoids generic gradients and rounded card layouts in favor of flat color fields, ink-like borders, offset print shadows, editorial typography, and asymmetric product blocks.
+A Next.js storefront for Natalie’s handmade ceramics in Denver. The real collection contains eight products and 12 product photos, plus Natalie’s portrait. The supplied images are in `public/products/` and `public/studio/` with descriptive filenames. All nine original JPEG uploads are copied unchanged; the three HEICs are converted to full-resolution JPEGs. Product galleries show the complete frame and open an enlarged view.
 
-## What works
+## What is ready
 
-- The homepage is the full seven-product catalog.
-- Every product opens on its own URL with a three-image gallery.
-- Each listing has its exact placeholder price, quantity controls, and a realistic demo checkout.
-- The checkout validates its fields and shows a demo confirmation without sending, saving, or charging anything.
-- Visitors can submit star ratings and reviews; during this prototype phase, reviews are stored in that visitor's browser.
-- A separate About the Potter page is ready for a real portrait and biography.
-- The layout is responsive and keyboard accessible.
+- Responsive collection and individual product pages, with each photo matched to the correct piece.
+- Natalie’s biography, portrait, custom-request guidance, and About-page contact section.
+- `/admin`: email/password studio login, password reset, product creation/editing, photo uploads, cover selection, drafts/publishing, pricing and stock, contact inbox, order statuses, review moderation, public email and portrait settings.
+- Durable products, messages, reviews, and images through Supabase; all writes are protected by database policies or server-side authorization.
+- Hosted Stripe Checkout, server-owned prices, atomic inventory reservations, verified/idempotent payment webhooks, and a payment status page. Card details never enter this website.
+- The Orders tab can sync held checkouts against Stripe to recover interrupted session creation or missed webhooks.
 
-## Replace the placeholders
+## Current launch status
 
-Product names, descriptions, prices, and photo paths live in `app/products.ts`. The temporary product images live in `public/placeholders/`. The studio name is in `app/layout.tsx`, and the potter biography is in `app/about/page.tsx`.
+**Login, contact submissions, persistent editing, and payments require account setup below. They are not live merely because this code is in GitHub.**
+
+Until Supabase is configured, the shop reads the supplied collection from `app/initial-products.json`, the studio explains the setup requirement, and checkout/contact submission are disabled. With Supabase configured, the database becomes authoritative; database failures show unavailable states rather than stale purchaseable fallback data.
+
+Natalie did not supply prices. Every price is deliberately unset, and unconfirmed inventory starts at 0. The garlic grater has 2 units per her message. Before selling, Natalie must confirm each price and stock count. Extra views of a piece do not create extra products. The cream-and-green feeder discloses slight damage at the bottom. The trinket tray has no invented dishwasher/microwave claim.
+
+## One-time setup
+
+Use a normal Next.js server host (such as the host already connected to this GitHub repository). This app is not a static GitHub Pages export. No hosting account or domain was created or moved by these changes.
+
+1. Create or select a Supabase project for this shop.
+2. Run `supabase/schema.sql` once in its SQL editor, then `supabase/seed.sql`. The seed is safe to repeat and does not overwrite Natalie’s edits. Do not rerun the schema file over existing tables; use reviewed migrations for future schema changes.
+3. In Supabase Authentication, disable public signups. Create Natalie’s email/password user using the Supabase dashboard. Copy that user’s UUID and grant studio access in the SQL editor:
+
+   ```sql
+   insert into public.admin_users(user_id) values ('NATALIE_USER_UUID');
+   ```
+
+   Knowing an email or signing into another account never grants studio access. To revoke access, remove the corresponding `admin_users` row. Do not put a password or service key in a product, GitHub file, or browser code.
+4. Set the Supabase Site URL to the live site origin and allow the exact `https://YOUR-DOMAIN/admin` recovery redirect. Configure an email sender in Supabase for production password-reset delivery. The client uses Supabase’s standard browser recovery session; there is no public signup UI.
+5. Copy `.env.example` to `.env.local` for local development. In the production host’s environment settings set the same keys. Use the Supabase project URL, public anon key, and private service-role key. Rebuild/redeploy after changing the `NEXT_PUBLIC_` keys, which are embedded at build time. Keep secrets out of GitHub.
+6. Open `/admin`, sign in, confirm all prices and stock counts, and add Natalie’s public contact email if desired. The contact form saves to the Messages tab even if the public email is blank; it does not send notification emails. Natalie replies using the email link in each message.
+7. Complete the Stripe setup below before enabling checkout.
+
+## Stripe setup and launch check
+
+1. Use Natalie’s appropriate Stripe business account and complete Stripe’s account requirements. Start with test-mode credentials. Configure a US shipping rate in Stripe; the initial checkout supports US shipping only. Set `STRIPE_SHIPPING_RATE_ID` to that rate’s ID.
+2. Set `STRIPE_SECRET_KEY` and the exact HTTPS `SITE_URL`. Configure a Stripe webhook endpoint at `https://YOUR-DOMAIN/api/stripe/webhook` for `checkout.session.completed` and `checkout.session.expired`; set its signing secret as `STRIPE_WEBHOOK_SECRET`.
+3. Explicitly choose the tax configuration. Set `STRIPE_AUTOMATIC_TAX=true` only after configuring Stripe Tax as intended; otherwise it stays false. Shipping and any configured tax are itemized on Stripe’s hosted checkout. Refund/return and fulfillment policies still need Natalie’s business decisions; no policy was invented.
+4. Confirm a product has a real price and stock. In a **test deployment using test keys**, set `CHECKOUT_ENABLED=true`, rebuild/deploy, complete a Stripe test payment, and verify: the order becomes paid, stock decreases once, a repeat webhook does not decrease it again, and a second buyer cannot buy an already reserved last piece.
+5. Test a checkout that expires and confirm its hold is released. Run **Orders → Sync with Stripe** for an interrupted or missed checkout event. It retains ambiguous recent holds; a no-session hold is released only after the 24-hour reconciliation window and a complete Stripe session search. A confirmed Stripe validation rejection can release a pre-creation hold immediately.
+6. Switch to the live key, live shipping-rate ID, and live webhook secret only after that check. Rebuild/redeploy and verify the live webhook is enabled. `CHECKOUT_ENABLED=false` closes new purchases immediately after redeployment without interfering with webhook fulfillment.
+
+Each checkout purchases one product with quantity bounded by stock. The SQL transaction serializes reservations, and immutable reservation snapshots supply prices to Stripe. Inventory remains reserved through checkout until payment or Stripe-confirmed expiration. Cancel navigation does not cancel a Stripe session. The return URL never serves as proof of payment. Admin saves use optimistic concurrency to avoid restoring stock from a stale editing form.
+
+Stripe stores the payment and delivery details. The studio stores the order identifier, purchased product/quantity, total, status, and customer email. Fulfillment and refunds are managed in Stripe; changing local stock does not issue a refund.
+
+## Natalie’s everyday workflow
+
+1. Follow **Studio login** in the website footer and sign in.
+2. Choose **Add a product**, enter its details, price, and unsold stock, then upload JPG/PNG/WebP photos (up to 12 per product; 15 MB each). Use **Make cover** to choose the shop photo.
+3. Leave **Published in the shop** unchecked while preparing it; check it and save when it is ready. There is no ten-product limit.
+4. Edit a listing to change details or hide it. Set stock to zero when sold outside the website. If stock changed while you were editing, cancel/reopen the listing and apply your edit to the current version.
+5. Read **Messages**, review **Orders**, approve customer **Reviews**, and change your contact email or portrait in **Studio details**.
+
+The initial repository photos remain in GitHub. Photos that Natalie adds later are saved to the persistent Supabase image bucket and appear on the site without a code deployment. They do not need a new GitHub commit. Unlinking an image from a product leaves its file in the bucket, avoiding accidental destruction of a photo used elsewhere.
 
 ## Run locally
 
-```bash
-npm install
+```sh
+npm ci
+cp .env.example .env.local
 npm run dev
 ```
 
-## Before taking real payments
+For the unconfigured catalog only, environment values may stay empty. For server features, use the configured Supabase project and test Stripe keys. The production build is `npm run build`. Keep existing production hosting configured as a Node/Next.js application.
 
-The current checkout is intentionally a non-live demonstration. Connect a payment provider such as Stripe or Square and use a server-side order flow before accepting customer information or payments. Shared public reviews will also need a database and moderation controls; the current prototype stores reviews only in the browser that submitted them.
+## Verification performed
+
+- Next.js production build and TypeScript check.
+- Database schema executed in PostgreSQL-compatible PGlite with 52 focused authorization and inventory checks: anonymous/non-admin denial, admin save, stale-save rejection, last-item reservation, idempotent payment updates, amount/session mismatch rejection, and expiration.
+- Product/photo count, local asset references, and supplied specs cross-checked against Natalie’s messages. No browser visual test or live provider transaction has been completed; those require the configured accounts.
+
+## Technical references
+
+- [Supabase row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- [Supabase password authentication](https://supabase.com/docs/guides/auth/passwords)
+- [Supabase Storage access control](https://supabase.com/docs/guides/storage/security/access-control)
+- [Stripe Checkout Sessions](https://docs.stripe.com/api/checkout/sessions/create)
+- [Stripe fulfillment](https://docs.stripe.com/checkout/fulfillment?payment-ui=stripe-hosted)
+- [Stripe webhooks](https://docs.stripe.com/webhooks)

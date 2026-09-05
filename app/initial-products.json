@@ -1,0 +1,194 @@
+[
+  {
+    "slug": "green-matcha-set",
+    "name": "Matcha bowl & whisk holder",
+    "category": "Tea rituals",
+    "description": "A green glazed bowl with a pouring spout, paired with a matching whisk holder.",
+    "price_cents": null,
+    "stock": 0,
+    "weight_lbs": 1.08,
+    "dimensions": null,
+    "material": "BMX clay",
+    "care": "Dishwasher and microwave safe.",
+    "condition_note": "",
+    "images": [
+      {
+        "src": "/products/green-matcha-bowl-whisk-holder-set.jpg",
+        "alt": "Matcha bowl & whisk holder"
+      },
+      {
+        "src": "/products/green-matcha-bowl-whisk-holder-set-angle.jpg",
+        "alt": "Matcha bowl and whisk holder, alternate view"
+      }
+    ],
+    "tone": "mint",
+    "published": true,
+    "sort_order": 0
+  },
+  {
+    "slug": "cobalt-citrus-juicer",
+    "name": "Cobalt citrus juicer",
+    "category": "Kitchen",
+    "description": "A deep blue citrus juicer with a raised center and a pouring spout.",
+    "price_cents": null,
+    "stock": 0,
+    "weight_lbs": 1.02,
+    "dimensions": null,
+    "material": "BMX clay",
+    "care": "Dishwasher and microwave safe.",
+    "condition_note": "",
+    "images": [
+      {
+        "src": "/products/cobalt-citrus-juicer.jpg",
+        "alt": "Cobalt citrus juicer"
+      }
+    ],
+    "tone": "blue",
+    "published": true,
+    "sort_order": 1
+  },
+  {
+    "slug": "green-matcha-bowl",
+    "name": "Green matcha bowl",
+    "category": "Tea rituals",
+    "description": "A wheel-thrown green matcha bowl with a pouring spout and visible throwing lines.",
+    "price_cents": null,
+    "stock": 0,
+    "weight_lbs": 1.1,
+    "dimensions": null,
+    "material": "BMX clay",
+    "care": "Dishwasher and microwave safe.",
+    "condition_note": "",
+    "images": [
+      {
+        "src": "/products/green-matcha-bowl-full.jpg",
+        "alt": "Green matcha bowl, full view"
+      },
+      {
+        "src": "/products/green-matcha-bowl.jpg",
+        "alt": "Green matcha bowl"
+      }
+    ],
+    "tone": "butter",
+    "published": true,
+    "sort_order": 2
+  },
+  {
+    "slug": "amber-slow-feeder",
+    "name": "Amber slow feeder",
+    "category": "For pets",
+    "description": "A small-dog slow feeder with concentric rings in an amber and brown glaze.",
+    "price_cents": null,
+    "stock": 0,
+    "weight_lbs": 1.67,
+    "dimensions": "6 \u00d7 6 inches",
+    "material": "BMX clay",
+    "care": "Dishwasher and microwave safe.",
+    "condition_note": "",
+    "images": [
+      {
+        "src": "/products/amber-small-dog-slow-feeder.jpg",
+        "alt": "Amber slow feeder"
+      }
+    ],
+    "tone": "peach",
+    "published": true,
+    "sort_order": 3
+  },
+  {
+    "slug": "dark-glaze-slow-feeder",
+    "name": "Dark glaze slow feeder",
+    "category": "For pets",
+    "description": "A small-dog slow feeder with concentric rings and a dark brown and green glaze.",
+    "price_cents": null,
+    "stock": 0,
+    "weight_lbs": 1.1,
+    "dimensions": "5.5 \u00d7 5.5 inches",
+    "material": "BMX clay",
+    "care": "Dishwasher and microwave safe.",
+    "condition_note": "",
+    "images": [
+      {
+        "src": "/products/dark-glaze-small-dog-slow-feeder-front.jpg",
+        "alt": "Dark glaze slow feeder"
+      },
+      {
+        "src": "/products/dark-glaze-small-dog-slow-feeder-angle.jpg",
+        "alt": "Dark glaze slow feeder \u2014 alternate view"
+      }
+    ],
+    "tone": "mint",
+    "published": true,
+    "sort_order": 4
+  },
+  {
+    "slug": "blue-trinket-tray",
+    "name": "Blue trinket tray",
+    "category": "Around the home",
+    "description": "A small, wavy-edged tray in blue and pale glazes for your everyday little things.",
+    "price_cents": null,
+    "stock": 0,
+    "weight_lbs": 0.97,
+    "dimensions": null,
+    "material": "BMX clay",
+    "care": null,
+    "condition_note": "",
+    "images": [
+      {
+        "src": "/products/blue-small-trinket-tray.jpg",
+        "alt": "Blue trinket tray"
+      }
+    ],
+    "tone": "lilac",
+    "published": true,
+    "sort_order": 5
+  },
+  {
+    "slug": "cream-green-slow-feeder",
+    "name": "Cream & green slow feeder",
+    "category": "For pets",
+    "description": "A small-dog slow feeder with concentric rings and a contrasting cream and green glaze.",
+    "price_cents": null,
+    "stock": 0,
+    "weight_lbs": 1.39,
+    "dimensions": "6 \u00d7 6 inches",
+    "material": "BMX clay",
+    "care": "Dishwasher and microwave safe.",
+    "condition_note": "Slightly damaged at the bottom. Please review this condition note before purchasing.",
+    "images": [
+      {
+        "src": "/products/cream-green-small-dog-slow-feeder-front.jpg",
+        "alt": "Cream & green slow feeder"
+      },
+      {
+        "src": "/products/cream-green-small-dog-slow-feeder-top.jpg",
+        "alt": "Cream & green slow feeder \u2014 alternate view"
+      }
+    ],
+    "tone": "butter",
+    "published": true,
+    "sort_order": 6
+  },
+  {
+    "slug": "blue-garlic-grater",
+    "name": "Garlic grater & spoon rest",
+    "category": "Kitchen",
+    "description": "A blue glazed garlic grater that doubles as a spoon rest.",
+    "price_cents": null,
+    "stock": 2,
+    "weight_lbs": 0.46,
+    "dimensions": null,
+    "material": "BMX clay",
+    "care": "Dishwasher and microwave safe.",
+    "condition_note": "",
+    "images": [
+      {
+        "src": "/products/blue-garlic-grater-spoon-rest.jpg",
+        "alt": "Blue garlic grater and spoon rest"
+      }
+    ],
+    "tone": "blue",
+    "published": true,
+    "sort_order": 7
+  }
+]
