@@ -39,7 +39,7 @@ const products: Product[] = initialProducts.filter(p => p.published).map(p => ({
 export async function getProducts() { return products; }
 export async function getProduct(slug: string) { return products.find(p => p.slug === slug); }
 export async function getStudio() {
-  return { contact_email: '', portrait_url: '${basePath}/studio/natalie-portrait.jpg' };
+  return { contact_email: 'natspottery@gmail.com', portrait_url: '${basePath}/studio/natalie-portrait.jpg' };
 }
 `);
   for (const file of ['app/page.tsx', 'app/about/page.tsx', 'app/product/[slug]/page.tsx']) {
@@ -60,7 +60,7 @@ export async function generateStaticParams() {
     'AboutPage({ searchParams }: { searchParams: Promise<{ piece?: string }> })', 'AboutPage()');
   await replace('app/about/page.tsx', 'const { piece } = await searchParams;', "const piece = ''; ");
   await replace('app/about/page.tsx',
-    'enabled={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL)}', 'enabled={false}');
+    "enabled={process.env.CONTACT_EMAIL_ENABLED === 'true'}", 'enabled={false}');
   await replace('app/lib/brand.ts', "'/brand/pottery-by-natalie-logo.jpg'", `'${basePath}/brand/pottery-by-natalie-logo.jpg'`);
 
   // Pages has no server. Do not include a login form or imply that credentials work here.
@@ -79,7 +79,7 @@ export default function AdminPage() {
 `);
   const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
   for (const key of Object.keys(env)) {
-    if (/SUPABASE|STRIPE|CHECKOUT|SITE_URL/.test(key)) delete env[key];
+    if (/SUPABASE|STRIPE|CHECKOUT|SITE_URL|CONTACT_EMAIL_ENABLED/.test(key)) delete env[key];
   }
   const build = spawnSync(process.execPath, [join(root, 'node_modules/next/dist/bin/next'), 'build', '--webpack'], {
     cwd: stage, env, stdio: 'inherit',

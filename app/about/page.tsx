@@ -61,7 +61,7 @@ export default async function AboutPage({ searchParams }: { searchParams: Promis
           <p>Have a question about a piece, or an idea for something custom? I’d love to hear it.</p>
           <h3>A note on custom pieces</h3><p>I’m open to custom requests, but I can’t make every design. Each piece will have my own creative spin. Tell me what you have in mind, and we can talk about what’s possible.</p>
           {studio.contact_email && <a className="contact-email" href={`mailto:${studio.contact_email}`}>{studio.contact_email}</a>}
-        </div><ContactForm enabled={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL)} piece={typeof piece === 'string' ? piece.slice(0, 120) : ''} />
+        </div><ContactForm enabled={process.env.CONTACT_EMAIL_ENABLED === 'true'} piece={typeof piece === 'string' ? piece.slice(0, 120) : ''} />
       </section>
     </main>
   );

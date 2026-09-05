@@ -9,7 +9,7 @@ export async function getProducts(): Promise<Product[]> {
 }
 export async function getProduct(slug: string) { return (await getProducts()).find(product => product.slug === slug); }
 export async function getStudio() {
-  const fallback = { contact_email: '', portrait_url: '/studio/natalie-portrait.jpg' };
+  const fallback = { contact_email: 'natspottery@gmail.com', portrait_url: '/studio/natalie-portrait.jpg' };
   if (!hasDatabase()) return fallback;
   const { data, error } = await publicDatabase().from('studio_settings').select('contact_email,portrait_url').eq('id', 1).maybeSingle();
   if (error) throw new Error('Studio details are temporarily unavailable.');
