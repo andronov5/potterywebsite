@@ -14,9 +14,9 @@ A Next.js storefront for Natalie’s handmade ceramics in Denver. The real colle
 
 ## Current launch status
 
-**Studio login and persistent product editing are configured on Netlify. Review submissions still require the private Supabase server key. Contact email delivery uses Netlify Forms and is gated by CONTACT_EMAIL_ENABLED until its notification is configured. Payments remain disabled; Venmo through PayPal Checkout is the owner's requested next integration.**
+**Studio login and persistent product editing are configured on Netlify. Review submissions still require the private Supabase server key. The contact form prepares a direct email to Natalie without a paid form service. Payments remain disabled; Venmo through PayPal Checkout is the owner's requested next integration.**
 
-Until Supabase is configured, the shop reads the supplied collection from `app/initial-products.json`, the studio explains the setup requirement, and checkout is disabled. Contact form delivery is configured separately in Netlify. With Supabase configured, the database becomes authoritative; database failures show unavailable states rather than stale purchaseable fallback data.
+Until Supabase is configured, the shop reads the supplied collection from `app/initial-products.json`, the studio explains the setup requirement, and checkout is disabled. The contact form opens the visitor's email app with a prepared message. With Supabase configured, the database becomes authoritative; database failures show unavailable states rather than stale purchaseable fallback data.
 
 The supplied prices are saved in the collection and database seed: trinket tray $10; cream-and-green slow feeder $15; amber and dark glaze slow feeders $25 each; garlic grater $10; matcha bowl $30; matcha bowl and whisk holder $40; citrus juicer $15. The owner confirmed one of every piece, including the garlic grater. All eight live products were set to stock 1 once, and new products default to 1. Repeating the seed never restocks existing products. Pieces with stock 0 leave the collection while their direct pages and reviews remain available. Extra views of a piece do not create extra products. The cream-and-green feeder discloses slight damage at the bottom. The trinket tray has no invented dishwasher/microwave claim.
 
@@ -31,12 +31,12 @@ The full shop needs a normal Next.js server host. The GitHub Pages collection pr
    To permanently revoke access, remove both the private email entry and the corresponding `public.admin_users` row; otherwise a later email verification update could grant membership again. An authenticated account without membership cannot access the studio or edit the shop.
 4. Set both the Supabase Auth Site URL and its allowed Redirect URL to `https://pottery-by-natalie.netlify.app/admin/reset-password` (use the equivalent exact path if the domain changes). Dashboard invitations use the Auth Site URL as their default destination. Keep Netlify's separate `SITE_URL` at the site origin. Once these URLs are saved, invite the approved email through the Auth dashboard using the default confirmation-link template; the recipient chooses their own password. Configure an email sender in Supabase for production password-reset and invitation delivery. Password setup accepts the PKCE recovery flow and standard invitation/recovery fragments, validates the resulting user, and then allows a password change. Invalid links cannot fall back to another signed-in account.
 5. Copy `.env.example` to `.env.local` for local development. In the production host's environment settings set the same keys. Use the Supabase project URL, modern publishable key, and private service-role key. Rebuild/redeploy after changing the `NEXT_PUBLIC_` keys, which are embedded at build time. Keep secrets out of GitHub. The server validates Auth cookies and database membership before rendering `/admin`; `/admin/login` and `/admin/reset-password` are public entry routes. Password setup remains reachable with an existing session and on reload.
-6. Open `/admin`, sign in, confirm all prices and stock counts, and add Natalie’s public contact email if desired. The About page uses natspottery@gmail.com for contact. New contact form messages are delivered through Netlify Forms to that address; the studio Messages tab retains earlier database messages. Natalie can reply directly to a form notification because its Reply-To is the customer's email.
+6. Open `/admin`, sign in, confirm all prices and stock counts, and add Natalie’s public contact email if desired. The About page uses natspottery@gmail.com for contact. Its form prepares a message in the visitor's email app addressed to Natalie; the visitor reviews and sends it there. The studio Messages tab retains earlier database messages.
 7. Keep checkout disabled until the selected payment provider is connected and verified. The existing code supports Stripe; PayPal still needs the integration described below.
 
 ## Netlify hosting
 
-The full application is deployed at **https://pottery-by-natalie.netlify.app/**. The Netlify project is linked to this repository and automatically builds `main`. Production is public; non-production previews require Netlify team login. Studio authentication is configured and the first approved owner has been invited to choose a password. Reviews and payments require the private server settings described below. Contact forms use Netlify's email notifications.
+The full application is deployed at **https://pottery-by-natalie.netlify.app/**. The Netlify project is linked to this repository and automatically builds `main`. Production is public; non-production previews require Netlify team login. Studio authentication is configured and the first approved owner has been invited to choose a password. Reviews and payments require the private server settings described below. The contact form uses a direct email draft.
 
 Import this GitHub repository into the shop owner's Netlify account and deploy `main`. The root `netlify.toml` selects `npm run build`, `.next`, and Node 22. Keep the repository base directory empty. Netlify automatically supplies its Next.js adapter; do not use the Pages export command or a static `out` directory for the full app.
 
@@ -44,10 +44,10 @@ Set the Supabase values and exact Netlify HTTPS origin from `.env.example` in Ne
 
 ### Contact form email delivery
 
-1. Enable Netlify form detection and deploy the static `public/__forms.html` skeleton. Verify that the **pottery-contact** form is detected with name, email, topic, message, and website (honeypot) fields.
-2. In **Project configuration → Notifications → Emails and webhooks → Form submission notifications**, add an email notification for **pottery-contact** to **natspottery@gmail.com**. Use the subject **Pottery by Natalie — New contact message**. Do not send notifications to the studio login email.
-3. Set `CONTACT_EMAIL_ENABLED=true` for production and redeploy only once that notification is saved. Verify one submission is recorded; receipt in the destination mailbox must be checked by its owner. Netlify applies spam filtering and the honeypot. The email field becomes Reply-To.
-4. The Next.js form POST targets `/__forms.html` so it reaches Netlify's static form handler. The old database-only `/api/contact` route is removed. No private Supabase key or separate SMTP password is needed for contact messages. Review submission setup is unchanged.
+1. The About page collects a name, reply email, topic, and message, then opens a prepared draft addressed to **natspottery@gmail.com**.
+2. The visitor reviews the draft and presses Send in their own email app. The website never receives or stores the message.
+3. This flow is free and needs no Netlify notification, third-party form processor, API key, or payment information.
+4. The old database-only `/api/contact` route remains removed, and review submission setup is unchanged.
 
 The existing GitHub Pages workflow remains an independent browsing preview. Updating products in the full studio changes the Netlify shop immediately; it does not rewrite the Pages seed preview.
 

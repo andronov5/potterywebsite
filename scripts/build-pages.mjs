@@ -59,8 +59,6 @@ export async function generateStaticParams() {
   await replace('app/about/page.tsx',
     'AboutPage({ searchParams }: { searchParams: Promise<{ piece?: string }> })', 'AboutPage()');
   await replace('app/about/page.tsx', 'const { piece } = await searchParams;', "const piece = ''; ");
-  await replace('app/about/page.tsx',
-    "enabled={process.env.CONTACT_EMAIL_ENABLED === 'true'}", 'enabled={false}');
   await replace('app/lib/brand.ts', "'/brand/pottery-by-natalie-logo.jpg'", `'${basePath}/brand/pottery-by-natalie-logo.jpg'`);
 
   // Pages has no server. Do not include a login form or imply that credentials work here.
@@ -79,7 +77,7 @@ export default function AdminPage() {
 `);
   const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
   for (const key of Object.keys(env)) {
-    if (/SUPABASE|STRIPE|CHECKOUT|SITE_URL|CONTACT_EMAIL_ENABLED/.test(key)) delete env[key];
+    if (/SUPABASE|STRIPE|CHECKOUT|SITE_URL/.test(key)) delete env[key];
   }
   const build = spawnSync(process.execPath, [join(root, 'node_modules/next/dist/bin/next'), 'build', '--webpack'], {
     cwd: stage, env, stdio: 'inherit',
