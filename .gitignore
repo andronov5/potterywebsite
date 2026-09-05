@@ -43,3 +43,6 @@ next-env.d.ts
 /work/
 !.env.example
 *.tsbuildinfo
+
+# Local Netlify folder
+.netlify

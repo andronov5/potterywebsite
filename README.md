@@ -35,6 +35,8 @@ The full shop needs a normal Next.js server host. The GitHub Pages collection pr
 
 ## Netlify hosting
 
+The full application is deployed at **https://pottery-by-natalie.netlify.app/**. The Netlify project is linked to this repository and automatically builds `main`. Production is public; non-production previews require Netlify team login. The first studio account still needs its invitation. Contact submissions and payments require the private server settings described below.
+
 Import this GitHub repository into the shop owner's Netlify account and deploy `main`. The root `netlify.toml` selects `npm run build`, `.next`, and Node 22. Keep the repository base directory empty. Netlify automatically supplies its Next.js adapter; do not use the Pages export command or a static `out` directory for the full app.
 
 Set the Supabase values and exact Netlify HTTPS origin from `.env.example` in Netlify's environment settings. Public values need build access; the private service-role key needs server/function access. Leave `CHECKOUT_ENABLED=false` until Stripe setup is complete. Never put a private key in `netlify.toml` or a `NEXT_PUBLIC_` variable. Add the exact password setup redirect in Supabase after the site URL is assigned.
