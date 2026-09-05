@@ -17,7 +17,7 @@ export default async function Home() {
     <section className="product-grid" aria-label="All pottery products">
       {products.map((product, index) => <article className={`product-card tone-${product.tone}`} key={product.slug}>
         <Link className="product-link" href={`/product/${product.slug}`}>
-          <span className="product-photo-wrap"><Image src={product.images[0].src} alt={product.images[0].alt} fill sizes="(max-width: 620px) 90vw, (max-width: 1000px) 45vw, 30vw" priority={index < 3} /></span>
+          <span className="product-photo-wrap"><span className="frame-image"><Image src={product.images[0].src} alt={product.images[0].alt} fill sizes="(max-width: 620px) 90vw, (max-width: 1000px) 45vw, 30vw" priority={index < 3} /></span></span>
           <span className="product-copy"><span className="eyebrow">{product.category}</span><strong>{product.name}</strong>
             <span className="card-details">{product.weight_lbs} lb{product.dimensions ? ` · ${product.dimensions}` : ''}</span>
             {product.condition_note && <span className="condition-tag">Small imperfection · see details</span>}

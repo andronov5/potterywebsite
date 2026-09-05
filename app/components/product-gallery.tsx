@@ -10,7 +10,7 @@ export function ProductGallery({ product }: { product: Product }) {
   function move(n: number) { setActive(value => (value + n + product.images.length) % product.images.length); }
   return <section className={`detail-gallery tone-${product.tone}`} aria-label="Product photos">
     <button className="detail-main-photo" type="button" onClick={() => dialog.current?.showModal()} aria-label={`Enlarge photo of ${product.name}`}>
-      <span className="detail-photo-frame"><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 940px) 90vw, 50vw" priority /></span><span className="gallery-counter">Enlarge photo +</span>
+      <span className="detail-photo-frame"><span className="frame-image"><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 940px) 90vw, 50vw" priority /></span></span><span className="gallery-counter">Enlarge photo +</span>
     </button>
     {product.images.length > 1 && <><div className="gallery-controls"><button onClick={() => move(-1)} aria-label="Previous photo">← Previous</button><span aria-live="polite">{active + 1} / {product.images.length}</span><button onClick={() => move(1)} aria-label="Next photo">Next →</button></div>
       <div className="gallery-thumbnails">{product.images.map((image, i) => <button key={image.src} onClick={() => setActive(i)} aria-label={`View photo ${i + 1}`} aria-pressed={i === active}><Image src={image.src} alt="" width={240} height={300} /></button>)}</div></>}

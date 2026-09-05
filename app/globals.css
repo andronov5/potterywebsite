@@ -1140,10 +1140,12 @@ button:disabled, fieldset:disabled button { opacity: .55; cursor: not-allowed; }
   --frame-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
 }
 
-.catalog-page .product-photo-wrap,
+.catalog-page .product-card .product-photo-wrap,
 .product-page .detail-photo-frame {
   position: relative;
   display: block;
+  aspect-ratio: auto;
+  padding: calc(var(--frame-width) + 1px);
   overflow: hidden;
   border: 1px solid var(--ink);
   border-radius: 0;
@@ -1166,10 +1168,17 @@ button:disabled, fieldset:disabled button { opacity: .55; cursor: not-allowed; }
   pointer-events: none;
 }
 
-.catalog-page .product-photo-wrap img,
-.product-page .detail-photo-frame img {
+.catalog-page .frame-image,
+.product-page .frame-image {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   z-index: 1;
-  padding: calc(var(--frame-width) + 1px);
+}
+
+.catalog-page .frame-image img,
+.product-page .frame-image img {
   object-fit: contain;
 }
 
@@ -1185,7 +1194,7 @@ button:disabled, fieldset:disabled button { opacity: .55; cursor: not-allowed; }
   background: transparent;
 }
 
-.product-page .detail-photo-frame { width: 100%; aspect-ratio: 3 / 4; }
+.product-page .detail-photo-frame { width: 100%; }
 
 .product-page .gallery-counter {
   position: static;
