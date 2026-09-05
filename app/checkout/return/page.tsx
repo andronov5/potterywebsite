@@ -12,7 +12,7 @@ export default async function ReturnPage({ searchParams }: { searchParams: Promi
       if (session.payment_status === 'paid') { await applySession(session, 'paid'); paid = true; }
     } catch { /* Never infer a successful payment from the redirect alone. */ }
   }
-  return <main id="main-content" className="catalog-page status-page"><p className="eyebrow">Natalie’s Pottery</p>
+  return <main id="main-content" className="catalog-page status-page"><p className="eyebrow">Pottery by Natalie</p>
     <h1>{paid ? 'Thank you for supporting handmade.' : 'Your payment is not confirmed here yet.'}</h1>
     <p>{paid ? 'Your payment is confirmed and your order is recorded. Keep the confirmation from Stripe for your records.' : 'If you completed payment, please refresh this page in a moment. Check your Stripe receipt or contact Natalie before trying to pay again.'}</p>
     {!paid && id && <Link className="ink-button" href={`/checkout/return?session_id=${encodeURIComponent(id)}`}>Check again</Link>}

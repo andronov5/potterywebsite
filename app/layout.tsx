@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { brand } from './lib/brand';
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Natalie’s Pottery | Handmade in Denver",
-    template: "%s | Natalie’s Pottery",
+    default: `${brand.name} | ${brand.tagline}`,
+    template: `%s | ${brand.name}`,
   },
   description:
-    "Handmade pottery by Natalie in Denver, Colorado. Explore matcha bowls, kitchen pieces, slow feeders, and small treasures for your home.",
+    "Pottery by Natalie. Matcha bowls, kitchen pieces, slow feeders, and trinket trays. Made by hand.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: brand.logo,
+    shortcut: brand.logo,
   },
 };
 
@@ -27,9 +28,9 @@ export default function RootLayout({
           Skip to content
         </a>
         <header className="site-header">
-          <Link className="wordmark" href="/" aria-label="Natalie’s Pottery home">
-            <span>Natalie’s Pottery</span>
-            <small>Made by hand, in Denver</small>
+          <Link className="wordmark" href="/" aria-label={`${brand.name} home`}>
+            <span className="brand-logo"><img src={brand.logo} alt="" width="2000" height="2000" /></span>
+            <span className="brand-name">{brand.name}</span>
           </Link>
           <nav className="site-nav" aria-label="Main navigation">
             <Link href="/">Shop all</Link>
@@ -38,7 +39,7 @@ export default function RootLayout({
         </header>
         {children}
         <footer className="site-footer">
-          <p>Small-batch pottery, made by hand.</p>
+          <p>{brand.tagline}</p>
           <div><Link href="/about#contact">Contact Natalie</Link><Link href="/admin">Studio login</Link></div>
         </footer>
       </body>

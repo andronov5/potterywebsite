@@ -45,6 +45,8 @@ export async function getStudio() {
   for (const file of ['app/page.tsx', 'app/about/page.tsx', 'app/product/[slug]/page.tsx']) {
     await replace(file, "export const dynamic = 'force-dynamic';", '');
   }
+  await replace('app/page.tsx', "import { checkoutReady } from './lib/server';", '');
+  await replace('app/page.tsx', 'const orderingEnabled = checkoutReady();', 'const orderingEnabled = false;');
   await replace('app/product/[slug]/page.tsx', "import { checkoutReady } from '../../lib/server';", '');
   await replace('app/product/[slug]/page.tsx', "import { hasDatabase } from '../../lib/supabase';", `
 import { getProducts } from '../../lib/catalog';
@@ -60,8 +62,7 @@ export async function generateStaticParams() {
   await replace('app/about/page.tsx', 'const { piece } = await searchParams;', "const piece = ''; ");
   await replace('app/about/page.tsx',
     'enabled={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL)}', 'enabled={false}');
-  await replace('app/layout.tsx', 'icon: "/favicon.svg"', `icon: "${basePath}/favicon.svg"`);
-  await replace('app/layout.tsx', 'shortcut: "/favicon.svg"', `shortcut: "${basePath}/favicon.svg"`);
+  await replace('app/lib/brand.ts', "'/brand/pottery-by-natalie-logo.jpg'", `'${basePath}/brand/pottery-by-natalie-logo.jpg'`);
 
   // Pages has no server. Do not include a login form or imply that credentials work here.
   await rm(join(stage, 'app/admin/studio.tsx'));

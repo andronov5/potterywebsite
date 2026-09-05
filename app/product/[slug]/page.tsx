@@ -21,7 +21,7 @@ export default async function ProductPage({ params }: Props) {
     <Link className="back-link" href="/">← Back to the collection</Link>
     <div className="product-detail-grid"><ProductGallery product={product} />
       <section className="product-info" aria-labelledby="product-title">
-        <p className="eyebrow">{product.category} · Handmade in Denver</p>
+        <p className="eyebrow">{product.category}</p>
         <h1 id="product-title">{product.name}</h1><p className="detail-price">{formatPrice(product.price_cents)}</p>
         <p className="detail-description">{product.description}</p>
         {product.condition_note && <p className="condition-notice"><strong>Please note</strong>{product.condition_note}</p>}
@@ -30,7 +30,6 @@ export default async function ProductPage({ params }: Props) {
           {product.dimensions && <div><dt>Dimensions</dt><dd>{product.dimensions}</dd></div>}
           {product.care && <div><dt>Care</dt><dd>{product.care}</dd></div>}
         </dl>
-        <p className="handmade-note">Each piece is made by hand. Look through the photos to see its individual glaze and shape.</p>
         <CheckoutPanel product={product} enabled={checkoutReady()} />
       </section>
     </div><ReviewSection productSlug={product.slug} enabled={hasDatabase()} />

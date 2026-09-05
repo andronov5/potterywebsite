@@ -1,4 +1,4 @@
-# Natalie’s Pottery
+# Pottery by Natalie
 
 A Next.js storefront for Natalie’s handmade ceramics in Denver. The real collection contains eight products and 12 product photos, plus Natalie’s portrait. The supplied images are in `public/products/` and `public/studio/` with descriptive filenames. All nine original JPEG uploads are copied unchanged; the three HEICs are converted to full-resolution JPEGs. Product galleries show the complete frame and open an enlarged view.
 
@@ -17,7 +17,7 @@ A Next.js storefront for Natalie’s handmade ceramics in Denver. The real colle
 
 Until Supabase is configured, the shop reads the supplied collection from `app/initial-products.json`, the studio explains the setup requirement, and checkout/contact submission are disabled. With Supabase configured, the database becomes authoritative; database failures show unavailable states rather than stale purchaseable fallback data.
 
-Natalie did not supply prices. Every price is deliberately unset, and unconfirmed inventory starts at 0. The garlic grater has 2 units per her message. Before selling, Natalie must confirm each price and stock count. Extra views of a piece do not create extra products. The cream-and-green feeder discloses slight damage at the bottom. The trinket tray has no invented dishwasher/microwave claim.
+The supplied prices are saved in the collection and database seed: trinket tray $10; cream-and-green slow feeder $15; amber and dark glaze slow feeders $25 each; garlic grater $10; matcha bowl $30; matcha bowl and whisk holder $40; citrus juicer $15. Unconfirmed inventory starts at 0, and the garlic grater has 2 units per Natalie’s message. Confirm stock before opening sales. The browsing preview displays prices without labeling unconfirmed stock as sold out. Extra views of a piece do not create extra products. The cream-and-green feeder discloses slight damage at the bottom. The trinket tray has no invented dishwasher/microwave claim.
 
 ## One-time setup
 
