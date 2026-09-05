@@ -18,7 +18,7 @@ export function CheckoutPanel({ product, enabled }: { product: Product; enabled:
     {available ? <><p>{product.stock} available. Shipping and applicable tax are shown before you pay.</p>
       {product.stock > 1 && <label className="quantity-label">Quantity<select value={quantity} disabled={busy} onChange={e => { setQuantity(Number(e.target.value)); requestId.current = ''; }}>{Array.from({ length: Math.min(product.stock, 10) }, (_, i) => <option key={i} value={i + 1}>{i + 1}</option>)}</select></label>}
       <button className="checkout-button" disabled={busy} onClick={checkout}>{busy ? 'Opening checkout…' : 'Continue to secure checkout'}<strong>{formatPrice(product.price_cents! * quantity)}</strong></button><p className="payment-note">Payment details are entered directly on Stripe’s secure checkout.</p>
-    </> : <><p>{enabled && product.price_cents !== null && product.stock === 0 ? 'This piece is currently sold out.' : 'Online ordering is not open yet.'}</p><Link className="paper-button" href={`/about?piece=${encodeURIComponent(product.name)}#contact`}>Ask about this piece</Link></>}
+    </> : <><p>{product.stock === 0 ? 'This piece is currently sold out.' : 'Online ordering is not open yet.'}</p><Link className="paper-button" href={`/about?piece=${encodeURIComponent(product.name)}#contact`}>Ask about this piece</Link></>}
     {error && <p className="error-message" role="alert">{error}</p>}
   </section>;
 }

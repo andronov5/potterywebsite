@@ -3,7 +3,7 @@ import { initialProducts, type Product } from '../products';
 import { hasDatabase, publicDatabase } from './supabase';
 export async function getProducts(): Promise<Product[]> {
   if (!hasDatabase()) return initialProducts.filter(p => p.published);
-  const { data, error } = await publicDatabase().from('products').select('*').order('sort_order').order('created_at');
+  const { data, error } = await publicDatabase().from('products').select('*').is('deleted_at', null).order('sort_order').order('created_at');
   if (error) throw new Error('The collection is temporarily unavailable. Please try again.');
   return data as Product[];
 }

@@ -42,7 +42,7 @@ create table public.products (
  category text not null check (category in ('Tea rituals','Kitchen','For pets','Around the home')),
  description text not null check (length(trim(description)) between 1 and 3000),
  price_cents integer check (price_cents between 50 and 1000000),
- stock integer not null default 0 check (stock between 0 and 1000),
+ stock integer not null default 1 check (stock between 0 and 1000),
  weight_lbs numeric check (weight_lbs > 0 and weight_lbs <= 1000),
  dimensions text check (length(dimensions) <= 200),
  material text not null default 'BMX clay' check (length(material) between 1 and 200),
@@ -54,11 +54,13 @@ create table public.products (
  sort_order integer not null default 0 check (sort_order between 0 and 100000),
  created_at timestamptz not null default now(),
  updated_at timestamptz not null default now(),
+ deleted_at timestamptz,
+ constraint deleted_products_stay_unpublished check (deleted_at is null or not published),
  check (not published or jsonb_array_length(images) > 0)
 );
 alter table public.products enable row level security;
-create policy "Public catalog" on public.products for select to anon using (published);
-create policy "Authenticated catalog" on public.products for select to authenticated using (published or public.is_studio_admin());
+create policy "Public catalog" on public.products for select to anon using (published and deleted_at is null);
+create policy "Authenticated catalog" on public.products for select to authenticated using ((published and deleted_at is null) or public.is_studio_admin());
 grant select on public.products to anon, authenticated;
 revoke insert, update, delete on public.products from anon, authenticated;
 
@@ -146,6 +148,7 @@ begin
  if not exists(select 1 from public.admin_users where user_id = auth.uid()) then raise exception 'Studio access required'; end if;
  perform pg_advisory_xact_lock(hashtextextended(item->>'slug',1));
  select * into current_product from public.products where slug = item->>'slug' for update;
+ if current_product.deleted_at is not null then raise exception 'This product has been deleted. Refresh the studio.'; end if;
  if found and (item->>'updated_at' is null or current_product.updated_at is distinct from (item->>'updated_at')::timestamptz) then raise exception 'This product changed since you opened it. Cancel and reopen it before saving to protect stock.'; end if;
  if not found and item->>'updated_at' is not null then raise exception 'This product no longer exists'; end if;
  select coalesce(sum(quantity),0) into reserved_count from public.orders where product_slug = item->>'slug' and status = 'reserved';
@@ -165,6 +168,29 @@ create function public.save_product(item jsonb) returns void language sql securi
 $$;
 revoke all on function public.save_product(jsonb) from public, anon;
 grant execute on function public.save_product(jsonb) to authenticated;
+
+-- Keep a record for order history while removing the product from both lists.
+create function private.delete_product(product_slug text, expected_updated_at timestamptz) returns void
+language plpgsql security definer set search_path = '' as $$
+declare current_product public.products;
+begin
+ if not exists(select 1 from public.admin_users where user_id = auth.uid()) then raise exception 'Studio access required'; end if;
+ perform pg_advisory_xact_lock(hashtextextended(product_slug,1));
+ select * into current_product from public.products where slug = product_slug for update;
+ if not found or current_product.deleted_at is not null then raise exception 'This product has already been deleted. Refresh the studio.'; end if;
+ if expected_updated_at is null or current_product.updated_at is distinct from expected_updated_at then raise exception 'This product changed since you opened it. Refresh the studio before deleting.'; end if;
+ if exists(select 1 from public.orders o where o.product_slug = delete_product.product_slug and o.status = 'reserved') then raise exception 'This piece is held in an active checkout. Wait for the checkout to finish before deleting.'; end if;
+ update public.products set published = false, deleted_at = now(), updated_at = now() where slug = product_slug;
+end; $$;
+revoke all on function private.delete_product(text,timestamptz) from public, anon, authenticated;
+grant execute on function private.delete_product(text,timestamptz) to authenticated;
+
+create function public.delete_product(product_slug text, expected_updated_at timestamptz) returns void
+language sql security invoker set search_path = '' as $$
+ select private.delete_product(product_slug, expected_updated_at);
+$$;
+revoke all on function public.delete_product(text,timestamptz) from public, anon;
+grant execute on function public.delete_product(text,timestamptz) to authenticated;
 
 create function public.reserve_product(request_id uuid, requested_slug text, requested_quantity integer, config jsonb) returns jsonb language plpgsql security invoker set search_path = '' as $$
 declare p public.products; o public.orders; held integer;

@@ -6,7 +6,7 @@ import { ProductGallery } from '../../components/product-gallery';
 import { ReviewSection } from '../../components/review-section';
 import { formatPrice } from '../../products';
 import { getProduct } from '../../lib/catalog';
-import { checkoutReady } from '../../lib/server';
+import { checkoutReady, reviewSubmissionReady } from '../../lib/server';
 import { hasDatabase } from '../../lib/supabase';
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ slug: string }> };
@@ -32,6 +32,6 @@ export default async function ProductPage({ params }: Props) {
         </dl>
         <CheckoutPanel product={product} enabled={checkoutReady()} />
       </section>
-    </div><ReviewSection productSlug={product.slug} enabled={hasDatabase()} />
+    </div><ReviewSection key={product.slug} productSlug={product.slug} enabled={hasDatabase()} canSubmit={reviewSubmissionReady()} />
   </main>;
 }

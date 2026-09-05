@@ -6,18 +6,19 @@ A Next.js storefront for Natalie’s handmade ceramics in Denver. The real colle
 
 - Responsive collection and individual product pages, with each photo matched to the correct piece.
 - Natalie’s biography, portrait, custom-request guidance, and About-page contact section.
-- `/admin`: email/password studio login, password reset, product creation/editing, photo uploads, cover selection, drafts/publishing, pricing and stock, contact inbox, order statuses, review moderation, public email and portrait settings.
+- `/admin`: email/password studio login, password reset, product creation/editing/deletion, photo uploads, cover selection, drafts/publishing, pricing and stock, contact inbox, order statuses, review moderation, public email and portrait settings.
+- A five-star rating selector and approved public reviews on each product page. Submissions require the private server configuration; the website reports when submissions are unavailable.
 - Durable products, messages, reviews, and images through Supabase; all writes are protected by database policies or server-side authorization.
 - Hosted Stripe Checkout, server-owned prices, atomic inventory reservations, verified/idempotent payment webhooks, and a payment status page. Card details never enter this website.
 - The Orders tab can sync held checkouts against Stripe to recover interrupted session creation or missed webhooks.
 
 ## Current launch status
 
-**Login, contact submissions, persistent editing, and payments require account setup below. They are not live merely because this code is in GitHub.**
+**Studio login and persistent product editing are configured on Netlify. Review/contact submissions still require the private Supabase server key. Payments remain disabled; PayPal is the owner's requested next integration.**
 
 Until Supabase is configured, the shop reads the supplied collection from `app/initial-products.json`, the studio explains the setup requirement, and checkout/contact submission are disabled. With Supabase configured, the database becomes authoritative; database failures show unavailable states rather than stale purchaseable fallback data.
 
-The supplied prices are saved in the collection and database seed: trinket tray $10; cream-and-green slow feeder $15; amber and dark glaze slow feeders $25 each; garlic grater $10; matcha bowl $30; matcha bowl and whisk holder $40; citrus juicer $15. Unconfirmed inventory starts at 0, and the garlic grater has 2 units per Natalie’s message. Confirm stock before opening sales. The browsing preview displays prices without labeling unconfirmed stock as sold out. Extra views of a piece do not create extra products. The cream-and-green feeder discloses slight damage at the bottom. The trinket tray has no invented dishwasher/microwave claim.
+The supplied prices are saved in the collection and database seed: trinket tray $10; cream-and-green slow feeder $15; amber and dark glaze slow feeders $25 each; garlic grater $10; matcha bowl $30; matcha bowl and whisk holder $40; citrus juicer $15. The owner confirmed one of every piece, including the garlic grater. All eight live products were set to stock 1 once, and new products default to 1. Repeating the seed never restocks existing products. Pieces with stock 0 leave the collection while their direct pages and reviews remain available. Extra views of a piece do not create extra products. The cream-and-green feeder discloses slight damage at the bottom. The trinket tray has no invented dishwasher/microwave claim.
 
 ## One-time setup
 
@@ -31,7 +32,7 @@ The full shop needs a normal Next.js server host. The GitHub Pages collection pr
 4. Set both the Supabase Auth Site URL and its allowed Redirect URL to `https://pottery-by-natalie.netlify.app/admin/reset-password` (use the equivalent exact path if the domain changes). Dashboard invitations use the Auth Site URL as their default destination. Keep Netlify's separate `SITE_URL` at the site origin. Once these URLs are saved, invite the approved email through the Auth dashboard using the default confirmation-link template; the recipient chooses their own password. Configure an email sender in Supabase for production password-reset and invitation delivery. Password setup accepts the PKCE recovery flow and standard invitation/recovery fragments, validates the resulting user, and then allows a password change. Invalid links cannot fall back to another signed-in account.
 5. Copy `.env.example` to `.env.local` for local development. In the production host's environment settings set the same keys. Use the Supabase project URL, modern publishable key, and private service-role key. Rebuild/redeploy after changing the `NEXT_PUBLIC_` keys, which are embedded at build time. Keep secrets out of GitHub. The server validates Auth cookies and database membership before rendering `/admin`; `/admin/login` and `/admin/reset-password` are public entry routes. Password setup remains reachable with an existing session and on reload.
 6. Open `/admin`, sign in, confirm all prices and stock counts, and add Natalie’s public contact email if desired. The contact form saves to the Messages tab even if the public email is blank; it does not send notification emails. Natalie replies using the email link in each message.
-7. Complete the Stripe setup below before enabling checkout.
+7. Keep checkout disabled until the selected payment provider is connected and verified. The existing code supports Stripe; PayPal still needs the integration described below.
 
 ## Netlify hosting
 
@@ -61,10 +62,18 @@ Stripe stores the payment and delivery details. The studio stores the order iden
 1. Follow **Studio login** in the website footer and sign in.
 2. Choose **Add a product**, enter its details, price, and unsold stock, then upload JPG/PNG/WebP photos (up to 12 per product; 15 MB each). Use **Make cover** to choose the shop photo.
 3. Leave **Published in the shop** unchecked while preparing it; check it and save when it is ready. There is no ten-product limit.
-4. Edit a listing to change details or hide it. Set stock to zero when sold outside the website. If stock changed while you were editing, cancel/reopen the listing and apply your edit to the current version.
+4. Edit a listing to change details or hide it. Set stock to zero when sold outside the website; it leaves the collection but its review page remains accessible. **Delete → Confirm delete** removes a listing from the shop and studio while retaining its record for past orders. Deletion is refused during active checkouts or if the product changed since loading. A deleted product cannot be restored through a stale edit. Refresh the studio if a stale-edit warning appears.
 5. Read **Messages**, review **Orders**, approve customer **Reviews**, and change your contact email or portrait in **Studio details**.
 
 The initial repository photos remain in GitHub. Photos that Natalie adds later are saved to the persistent Supabase image bucket and appear on the site without a code deployment. They do not need a new GitHub commit. Unlinking an image from a product leaves its file in the bucket, avoiding accidental destruction of a photo used elsewhere.
+
+## PayPal connection still needed
+
+The requested payment provider is PayPal. Do not enable the current Stripe checkout as a substitute or label a PayPal payment link as automatic fulfillment. Connect the seller's PayPal Business account through a server integration with PayPal Orders: create and capture orders using database prices, verify payment identity/amount/currency, reconcile verified webhooks, and decrement stock exactly once. Only a confirmed payment removes the last piece from the collection. Start with sandbox credentials and verify last-item reservations, cancellation, duplicate notifications, and successful capture before live payments.
+
+Use PayPal's merchant payment notifications for sale emails once Natalie confirms the receiving account and notification email. Her PayPal account, email, and shipping or pickup choices have not been supplied. No PayPal payments or sale emails have been tested or activated.
+
+For existing databases, apply `supabase/migrations/20260905131125_studio_product_removal.sql` once. Fresh databases use the updated `schema.sql`; do not apply this migration a second time after that schema.
 
 ## Run locally
 

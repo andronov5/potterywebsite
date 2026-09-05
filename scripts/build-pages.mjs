@@ -45,9 +45,7 @@ export async function getStudio() {
   for (const file of ['app/page.tsx', 'app/about/page.tsx', 'app/product/[slug]/page.tsx']) {
     await replace(file, "export const dynamic = 'force-dynamic';", '');
   }
-  await replace('app/page.tsx', "import { checkoutReady } from './lib/server';", '');
-  await replace('app/page.tsx', 'const orderingEnabled = checkoutReady();', 'const orderingEnabled = false;');
-  await replace('app/product/[slug]/page.tsx', "import { checkoutReady } from '../../lib/server';", '');
+  await replace('app/product/[slug]/page.tsx', "import { checkoutReady, reviewSubmissionReady } from '../../lib/server';", '');
   await replace('app/product/[slug]/page.tsx', "import { hasDatabase } from '../../lib/supabase';", `
 import { getProducts } from '../../lib/catalog';
 export const dynamicParams = false;
@@ -57,6 +55,7 @@ export async function generateStaticParams() {
 `);
   await replace('app/product/[slug]/page.tsx', 'enabled={checkoutReady()}', 'enabled={false}');
   await replace('app/product/[slug]/page.tsx', 'enabled={hasDatabase()}', 'enabled={false}');
+  await replace('app/product/[slug]/page.tsx', 'canSubmit={reviewSubmissionReady()}', 'canSubmit={false}');
   await replace('app/about/page.tsx',
     'AboutPage({ searchParams }: { searchParams: Promise<{ piece?: string }> })', 'AboutPage()');
   await replace('app/about/page.tsx', 'const { piece } = await searchParams;', "const piece = ''; ");

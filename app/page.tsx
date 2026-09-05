@@ -3,11 +3,9 @@ import Image from 'next/image';
 import { formatPrice } from './products';
 import { getProducts } from './lib/catalog';
 import { brand } from './lib/brand';
-import { checkoutReady } from './lib/server';
 export const dynamic = 'force-dynamic';
 export default async function Home() {
-  const products = await getProducts();
-  const orderingEnabled = checkoutReady();
+  const products = (await getProducts()).filter(product => product.stock > 0);
   return <main id="main-content" className="catalog-page">
     <section className="catalog-intro" aria-labelledby="shop-heading">
       <h1 id="shop-heading">{brand.tagline}</h1>
@@ -21,7 +19,7 @@ export default async function Home() {
           <span className="product-copy"><span className="eyebrow">{product.category}</span><strong>{product.name}</strong>
             <span className="card-details">{product.weight_lbs} lb{product.dimensions ? ` · ${product.dimensions}` : ''}</span>
             {product.condition_note && <span className="condition-tag">Small imperfection · see details</span>}
-            <span className="card-bottom"><b>{formatPrice(product.price_cents)}</b><span>{orderingEnabled && product.price_cents !== null && product.stock === 0 ? 'Sold out' : 'View piece ↗'}</span></span>
+            <span className="card-bottom"><b>{formatPrice(product.price_cents)}</b><span>View piece ↗</span></span>
           </span>
         </Link>
       </article>)}

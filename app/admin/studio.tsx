@@ -9,18 +9,19 @@ const categories = ['Tea rituals','Kitchen','For pets','Around the home'];
 type Message = { id: string; name: string; email: string; topic: string; message: string; is_read: boolean; created_at: string };
 type Order = { id: string; product_name: string; quantity: number; status: string; customer_email: string | null; total_cents: number | null; stripe_session_id: string | null; created_at: string };
 type Review = { id: string; product_slug: string; name: string; rating: number; body: string; approved: boolean };
-const emptyProduct = (): Product => ({ slug: '', name: '', category: 'Kitchen', description: '', price_cents: null, stock: 0, weight_lbs: null, dimensions: null, material: 'BMX clay', care: null, condition_note: '', images: [], tone: 'mint', published: false, sort_order: 0 });
+const emptyProduct = (): Product => ({ slug: '', name: '', category: 'Kitchen', description: '', price_cents: null, stock: 1, weight_lbs: null, dimensions: null, material: 'BMX clay', care: null, condition_note: '', images: [], tone: 'mint', published: false, sort_order: 0 });
 export function AdminStudio({ paymentsReady }: { paymentsReady: boolean }) {
  const router = useRouter();
  const dbRef = useRef<SupabaseClient | null>(null);
  const [checking, setChecking] = useState(true); const [busy, setBusy] = useState(false); const [uploading, setUploading] = useState(false); const [status, setStatus] = useState('');
  const [tab, setTab] = useState('Products'); const [products, setProducts] = useState<Product[]>([]); const [messages, setMessages] = useState<Message[]>([]); const [orders, setOrders] = useState<Order[]>([]); const [reviews, setReviews] = useState<Review[]>([]);
  const [draft, setDraft] = useState<Product | null>(null); const [editing, setEditing] = useState(false); const [dirty, setDirty] = useState(false); const [confirmDiscard, setConfirmDiscard] = useState(false);
+ const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
  const [contactEmail, setContactEmail] = useState(''); const [portraitUrl, setPortraitUrl] = useState('/studio/natalie-portrait.jpg');
  function db() { if (!dbRef.current) throw new Error('The studio is not connected.'); return dbRef.current; }
  async function loadDashboard() {
   const result = await Promise.all([
-   db().from('products').select('*').order('sort_order').order('created_at'),
+   db().from('products').select('*').is('deleted_at', null).order('sort_order').order('created_at'),
    db().from('contact_messages').select('*').order('created_at', { ascending: false }),
    db().from('orders').select('id,product_name,quantity,status,customer_email,total_cents,stripe_session_id,created_at').order('created_at', { ascending: false }),
    db().from('reviews').select('*').order('created_at', { ascending: false }),
@@ -76,6 +77,18 @@ export function AdminStudio({ paymentsReady }: { paymentsReady: boolean }) {
    setDirty(false); setDraft(null); await loadDashboard(); setStatus('Product saved. Published changes are visible in the shop.');
   } catch (e) { setStatus(e instanceof Error ? e.message : 'Could not save the product.'); } finally { setBusy(false); }
  }
+ async function deleteProduct(product: Product) {
+  if (busy) return;
+  setBusy(true); setStatus('');
+  try {
+   if (!product.updated_at) throw new Error('Refresh the studio before deleting this product.');
+   const { error } = await db().rpc('delete_product', { product_slug: product.slug, expected_updated_at: product.updated_at });
+   if (error) throw new Error(error.message);
+   setProducts(items => items.filter(item => item.slug !== product.slug)); setDeleteTarget(null);
+   setStatus('Product deleted. Past orders are saved.');
+  } catch (e) { setStatus(e instanceof Error ? e.message : 'Could not delete the product.'); }
+  finally { setBusy(false); }
+ }
  async function reconcile() {
   setBusy(true); setStatus('Syncing checkout statuses…');
   try {
@@ -104,7 +117,9 @@ export function AdminStudio({ paymentsReady }: { paymentsReady: boolean }) {
  <p className="form-status" role="status">{status}</p>
  <nav className="studio-tabs" aria-label="Studio sections">{['Products','Messages','Orders','Reviews','Studio details'].map(t => <button key={t} className={tab === t ? 'active' : ''} onClick={() => { if (dirty) { setStatus('Save or cancel your product changes before switching sections.'); return; } setTab(t); setDraft(null); }} aria-current={tab === t ? 'page' : undefined}>{t}{t === 'Messages' && messages.some(m => !m.is_read) ? ` (${messages.filter(m => !m.is_read).length})` : ''}</button>)}</nav>
  {tab === 'Products' && !draft && <><div className="collection-heading"><h2>{products.length} products</h2><button className="ink-button" onClick={() => { setDraft({ ...emptyProduct(), sort_order: products.length }); setEditing(false); setDirty(false); setStatus(''); }}>Add a product +</button></div>
- <div className="admin-product-list">{products.map(p => <article key={p.slug}>{p.images[0] && <img src={p.images[0].src} alt="" />}<div><h3>{p.name}</h3><p>{formatPrice(p.price_cents)} · Stock: {p.stock}</p><span className="status-tag">{p.published ? 'Published' : 'Draft'}</span></div><button className="paper-button" onClick={() => { setDraft(structuredClone(p)); setEditing(true); setDirty(false); setStatus(''); }}>Edit</button></article>)}</div></>}
+ <div className="admin-product-list">{products.map(p => <article key={p.slug}>{p.images[0] && <img src={p.images[0].src} alt="" />}<div><h3>{p.name}</h3><p>{formatPrice(p.price_cents)} · Stock: {p.stock}</p><span className="status-tag">{!p.published ? 'Draft' : p.stock === 0 ? 'Sold out' : 'Published'}</span>
+ {deleteTarget?.slug === p.slug && <div className="notice" role="group" aria-label={`Confirm deletion of ${p.name}`}><p>Delete {p.name}? It will leave the shop and studio list. Past orders are saved.</p><div className="button-row"><button className="paper-button" disabled={busy} onClick={() => setDeleteTarget(null)}>Keep product</button><button className="text-button" disabled={busy} onClick={() => deleteProduct(p)}>{busy ? 'Deleting…' : 'Confirm delete'}</button></div></div>}
+ </div><button className="paper-button" disabled={busy} onClick={() => { setDraft(structuredClone(p)); setDeleteTarget(null); setEditing(true); setDirty(false); setStatus(''); }}>Edit</button><button className="text-button" aria-label={`Delete ${p.name}`} disabled={busy} onClick={() => { setDeleteTarget(p); setStatus(''); }}>Delete</button></article>)}</div></>}
  {tab === 'Products' && draft && <form className="studio-form product-editor" onSubmit={saveProduct}><h2>{editing ? 'Edit product' : 'New product'}</h2><fieldset disabled={busy || uploading}>
  <div className="field-grid"><label>Product name<input required maxLength={120} value={draft.name} onChange={e => change('name',e.target.value)} /></label><label>Category<select value={draft.category} onChange={e => change('category',e.target.value)}>{categories.map(c => <option key={c}>{c}</option>)}</select></label></div>
  <label>Description<textarea required maxLength={3000} rows={4} value={draft.description} onChange={e => change('description',e.target.value)} /></label>
