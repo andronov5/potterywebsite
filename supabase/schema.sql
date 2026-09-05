@@ -3,9 +3,32 @@ create table public.admin_users (
  user_id uuid primary key references auth.users(id) on delete cascade
 );
 alter table public.admin_users enable row level security;
-create policy "Read own studio membership" on public.admin_users for select to authenticated using (user_id = auth.uid());
+create policy "Read own studio membership" on public.admin_users for select to authenticated using (user_id = (select auth.uid()));
 grant select on public.admin_users to authenticated;
 revoke all on public.admin_users from anon;
+
+-- Privileged implementation details stay outside the exposed Data API schema.
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to authenticated;
+
+-- Pre-authorize owner emails privately before their Auth accounts are created.
+-- Insert addresses directly in Supabase; never commit personal emails here.
+create table private.studio_admin_emails (
+ email text primary key check (email = lower(email) and email ~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$')
+);
+revoke all on private.studio_admin_emails from public, anon, authenticated;
+alter table private.studio_admin_emails enable row level security;
+
+create function private.grant_studio_admin() returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+ if new.email_confirmed_at is not null and exists(select 1 from private.studio_admin_emails where email = lower(new.email)) then
+  insert into public.admin_users(user_id) values (new.id) on conflict do nothing;
+ end if;
+ return new;
+end; $$;
+revoke all on function private.grant_studio_admin() from public, anon, authenticated;
+create trigger grant_studio_admin_after_verification after insert or update of email, email_confirmed_at on auth.users for each row execute function private.grant_studio_admin();
 
 create function public.is_studio_admin() returns boolean language sql stable security invoker set search_path = '' as $$
  select exists(select 1 from public.admin_users where user_id = auth.uid());
@@ -34,8 +57,8 @@ create table public.products (
  check (not published or jsonb_array_length(images) > 0)
 );
 alter table public.products enable row level security;
-create policy "Published catalog" on public.products for select to anon, authenticated using (published);
-create policy "Studio reads drafts" on public.products for select to authenticated using (public.is_studio_admin());
+create policy "Public catalog" on public.products for select to anon using (published);
+create policy "Authenticated catalog" on public.products for select to authenticated using (published or public.is_studio_admin());
 grant select on public.products to anon, authenticated;
 revoke insert, update, delete on public.products from anon, authenticated;
 
@@ -91,9 +114,10 @@ create table public.reviews (
  body text not null check (length(body) between 10 and 2000),
  approved boolean not null default false, created_at timestamptz not null default now()
 );
+create index reviews_product_slug on public.reviews(product_slug);
 alter table public.reviews enable row level security;
-create policy "Public approved reviews" on public.reviews for select to anon, authenticated using (approved and exists(select 1 from public.products where slug = product_slug and published));
-create policy "Studio review moderation" on public.reviews for select to authenticated using (public.is_studio_admin());
+create policy "Public approved reviews" on public.reviews for select to anon using (approved and exists(select 1 from public.products where slug = product_slug and published));
+create policy "Authenticated reviews" on public.reviews for select to authenticated using (public.is_studio_admin() or (approved and exists(select 1 from public.products where slug = product_slug and published)));
 create policy "Studio approves reviews" on public.reviews for update to authenticated using (public.is_studio_admin()) with check (public.is_studio_admin());
 create policy "Studio removes reviews" on public.reviews for delete to authenticated using (public.is_studio_admin());
 grant select on public.reviews to anon, authenticated;
@@ -102,6 +126,7 @@ revoke insert on public.reviews from anon, authenticated;
 
 create table public.rate_limits (key text primary key, starts_at timestamptz not null, hits integer not null);
 alter table public.rate_limits enable row level security;
+create policy "No client rate limit access" on public.rate_limits for all to anon, authenticated using (false) with check (false);
 revoke all on public.rate_limits from anon, authenticated;
 create function public.take_rate_limit(bucket_key text, max_requests integer) returns boolean language plpgsql security invoker set search_path = '' as $$
 declare n integer;
@@ -115,7 +140,7 @@ begin
  return n <= max_requests;
 end; $$;
 
-create function public.save_product(item jsonb) returns void language plpgsql security definer set search_path = '' as $$
+create function private.save_product(item jsonb) returns void language plpgsql security definer set search_path = '' as $$
 declare reserved_count integer; photo jsonb; current_product public.products;
 begin
  if not exists(select 1 from public.admin_users where user_id = auth.uid()) then raise exception 'Studio access required'; end if;
@@ -132,6 +157,12 @@ begin
  values(item->>'slug',item->>'name',item->>'category',item->>'description',(item->>'price_cents')::integer,(item->>'stock')::integer,(item->>'weight_lbs')::numeric,item->>'dimensions',item->>'material',item->>'care',coalesce(item->>'condition_note',''),item->'images',item->>'tone',(item->>'published')::boolean,(item->>'sort_order')::integer)
  on conflict(slug) do update set name=excluded.name,category=excluded.category,description=excluded.description,price_cents=excluded.price_cents,stock=excluded.stock,weight_lbs=excluded.weight_lbs,dimensions=excluded.dimensions,material=excluded.material,care=excluded.care,condition_note=excluded.condition_note,images=excluded.images,tone=excluded.tone,published=excluded.published,sort_order=excluded.sort_order,updated_at=now();
 end; $$;
+revoke all on function private.save_product(jsonb) from public, anon, authenticated;
+grant execute on function private.save_product(jsonb) to authenticated;
+
+create function public.save_product(item jsonb) returns void language sql security invoker set search_path = '' as $$
+ select private.save_product(item);
+$$;
 revoke all on function public.save_product(jsonb) from public, anon;
 grant execute on function public.save_product(jsonb) to authenticated;
 

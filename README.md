@@ -25,17 +25,21 @@ The full shop needs a normal Next.js server host. The GitHub Pages collection pr
 
 1. Create or select a Supabase project for this shop.
 2. Run `supabase/schema.sql` once in its SQL editor, then `supabase/seed.sql`. The seed is safe to repeat and does not overwrite Natalie’s edits. Do not rerun the schema file over existing tables; use reviewed migrations for future schema changes.
-3. In Supabase Authentication, disable public signups. Create Natalie’s email/password user using the Supabase dashboard. Copy that user’s UUID and grant studio access in the SQL editor:
+3. In Supabase Authentication, disable public signups. Privately add each approved studio owner's lowercase email to `private.studio_admin_emails` in Supabase, then invite that email through the Auth dashboard or Admin API. Use the live `/admin/reset-password` URL as the invitation redirect. The database grants studio membership only after the allowlisted email is verified. Do not commit the email allowlist or account credentials to GitHub.
 
-   ```sql
-   insert into public.admin_users(user_id) values ('NATALIE_USER_UUID');
-   ```
-
-   Knowing an email or signing into another account never grants studio access. To revoke access, remove the corresponding `admin_users` row. Do not put a password or service key in a product, GitHub file, or browser code.
-4. Set the Supabase Site URL to the live site origin and allow the exact `https://YOUR-DOMAIN/admin` recovery redirect. Configure an email sender in Supabase for production password-reset delivery. The client uses Supabase’s standard browser recovery session; there is no public signup UI.
-5. Copy `.env.example` to `.env.local` for local development. In the production host’s environment settings set the same keys. Use the Supabase project URL, public anon key, and private service-role key. Rebuild/redeploy after changing the `NEXT_PUBLIC_` keys, which are embedded at build time. Keep secrets out of GitHub.
+   To permanently revoke access, remove both the private email entry and the corresponding `public.admin_users` row; otherwise a later email verification update could grant membership again. An authenticated account without membership cannot access the studio or edit the shop.
+4. Set the Supabase Site URL to the live site origin and allow the exact `https://YOUR-DOMAIN/admin/reset-password` redirect. Configure an email sender in Supabase for production password-reset and invitation delivery. Password setup accepts the PKCE recovery flow and standard invitation/recovery fragments, validates the resulting user, and then allows a password change. Invalid links cannot fall back to another signed-in account.
+5. Copy `.env.example` to `.env.local` for local development. In the production host's environment settings set the same keys. Use the Supabase project URL, modern publishable key, and private service-role key. Rebuild/redeploy after changing the `NEXT_PUBLIC_` keys, which are embedded at build time. Keep secrets out of GitHub. The server validates Auth cookies and database membership before rendering `/admin`; `/admin/login` and `/admin/reset-password` are public entry routes. Password setup remains reachable with an existing session and on reload.
 6. Open `/admin`, sign in, confirm all prices and stock counts, and add Natalie’s public contact email if desired. The contact form saves to the Messages tab even if the public email is blank; it does not send notification emails. Natalie replies using the email link in each message.
 7. Complete the Stripe setup below before enabling checkout.
+
+## Netlify hosting
+
+Import this GitHub repository into the shop owner's Netlify account and deploy `main`. The root `netlify.toml` selects `npm run build`, `.next`, and Node 22. Keep the repository base directory empty. Netlify automatically supplies its Next.js adapter; do not use the Pages export command or a static `out` directory for the full app.
+
+Set the Supabase values and exact Netlify HTTPS origin from `.env.example` in Netlify's environment settings. Public values need build access; the private service-role key needs server/function access. Leave `CHECKOUT_ENABLED=false` until Stripe setup is complete. Never put a private key in `netlify.toml` or a `NEXT_PUBLIC_` variable. Add the exact password setup redirect in Supabase after the site URL is assigned.
+
+The existing GitHub Pages workflow remains an independent browsing preview. Updating products in the full studio changes the Netlify shop immediately; it does not rewrite the Pages seed preview.
 
 ## Stripe setup and launch check
 
